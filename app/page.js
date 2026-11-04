@@ -96,6 +96,7 @@ export default function Home() {
     <main style={{ maxWidth: 600, margin: "40px auto", padding: 16 }}>
       <h1>Élèves</h1>
       <button onClick={() => supabase.auth.signOut()}>Déconnexion</button>
+      {" "}<a href="/notes">Saisir des notes</a>
       {error && <p style={{ color: "red" }}>{error}</p>}
 
       <h2>Ajouter un élève</h2>
