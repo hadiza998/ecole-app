@@ -77,64 +77,75 @@ export default function StudentFile({ studentId, role }) {
 
   return (
     <div className="lk-stack">
-      <div className="lk-card lk-hero">
-        <div className="avatar">{(student.first_name[0] || '') + (student.last_name[0] || '')}</div>
-        <div style={{ flex: 1 }}>
-          <h2 style={{ margin: 0 }}>{student.first_name} {student.last_name}</h2>
+      <div className="lk-card sf-head">
+        <div className="sf-avatar">{(student.first_name[0] || '') + (student.last_name[0] || '')}</div>
+        <div className="sf-id">
+          <h2>{student.first_name} {student.last_name}</h2>
           <div className="meta">{student.classes?.name || 'Sans classe'} · {student.classes?.school_year || ''}</div>
           {role !== 'parent' && student.access_code && (
             <div className="meta">Code parent : <code>{student.access_code}</code></div>
           )}
         </div>
-        <div className="lk-bigscore">
+        <div className="sf-score">
           <span>{fmt(yearAvg)}</span>
-          <small>{yearAvg != null ? `Moyenne · ${appreciation(yearAvg, st)}` : 'Pas encore de notes'}</small>
+          <small>{yearAvg != null ? appreciation(yearAvg, st) : 'Pas de notes'}</small>
         </div>
       </div>
 
       {todo.length > 0 && (
         <div className="lk-card">
           <h3><Icon name="calendar" /> À venir pour la classe</h3>
+          <div className="sf-todo">
           {todo.map((x) => {
             const n = Math.round((new Date(x.due_date) - new Date(new Date().toISOString().slice(0, 10))) / 864e5);
+            const d = new Date(x.due_date);
+            const k = x.kind === 'devoir' ? 'mid' : 'bad';
             return (
-              <div className="row" key={x.id}>
-                <div className="person">
-                  <span className={'badge ' + (x.kind === 'devoir' ? 'mid' : 'bad')}>{x.kind === 'devoir' ? 'Devoir' : x.kind === 'examen' ? 'Examen' : 'Composition'}</span>
-                  {x.title} {x.subjects?.name && <span className="tag">{x.subjects.name}</span>}
+              <div className="sf-item" key={x.id}>
+                <div className={'sf-date ' + k}><b>{d.getDate()}</b><small>{d.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '')}</small></div>
+                <div className="sf-info">
+                  <strong>{x.title}</strong>
+                  <div className="sf-sub">
+                    <span className={'badge ' + k}>{x.kind === 'devoir' ? 'Devoir' : x.kind === 'examen' ? 'Examen' : 'Composition'}</span>
+                    {x.subjects?.name && <span className="tag">{x.subjects.name}</span>}
+                  </div>
                   {x.chapters && <span className="meta">Chapitres : {x.chapters}</span>}
                 </div>
-                <span className="meta">{new Date(x.due_date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })} · <b>{n === 0 ? "Aujourd'hui" : n === 1 ? 'Demain' : `Dans ${n} jours`}</b></span>
+                <span className={'sf-when' + (n <= 2 ? ' soon' : '')}>{n === 0 ? "Aujourd'hui" : n === 1 ? 'Demain' : `Dans ${n} j`}</span>
               </div>
             );
           })}
+          </div>
         </div>
       )}
 
       <div className="lk-card">
         <h3>Notes par matière</h3>
         {subjects.length === 0 ? <div className="empty">Aucune note pour le moment.</div> : (
-          <div className="lk-scroll">
-            <table className="data">
-              <thead><tr><th>Matière</th><th>Coef</th>{periods.map((t) => <th key={t}>{periodShort(t, st)}</th>)}<th>Moyenne</th></tr></thead>
-              <tbody>
-                {subjects.map((s) => (
-                  <tr key={s.name}>
-                    <td>{s.name}</td><td>{s.coef}</td>
+          <div className="sf-subjects">
+            {subjects.map((s) => {
+              const v = subjectAvg(s.list, wD);
+              const low = v != null && v < st.pass_mark;
+              return (
+                <div className="sf-subj" key={s.name}>
+                  <div className="sf-subj-top">
+                    <div><strong>{s.name}</strong><small>coef {s.coef}</small></div>
+                    <span className={'sf-val' + (low ? ' low' : '')}>{fmt(v)}</span>
+                  </div>
+                  <div className="sf-track"><i className={low ? 'low' : ''} style={{ width: (v != null ? Math.min(100, (v / st.scale) * 100) : 0) + '%' }} /></div>
+                  <div className="sf-terms">
                     {periods.map((t) => {
-                      const v = subjectAvg(s.list.filter((g) => g.term === t), wD);
-                      return <td key={t} className={v != null && v < st.pass_mark ? 'lk-low' : ''}>{fmt(v)}</td>;
+                      const tv = subjectAvg(s.list.filter((g) => g.term === t), wD);
+                      return <span key={t} className={tv != null && tv < st.pass_mark ? 'low' : ''}>{periodShort(t, st)} <b>{fmt(tv)}</b></span>;
                     })}
-                    <td><strong>{fmt(subjectAvg(s.list, wD))}</strong></td>
-                  </tr>
-                ))}
-                <tr className="lk-total">
-                  <td colSpan={2}>Moyenne générale</td>
-                  {termAvgs.map((v, i) => <td key={i}>{fmt(v)}</td>)}
-                  <td><strong>{fmt(yearAvg)}</strong></td>
-                </tr>
-              </tbody>
-            </table>
+                  </div>
+                </div>
+              );
+            })}
+            <div className="sf-general">
+              <span>Moyenne générale</span>
+              <div>{termAvgs.map((v, i) => <small key={i}>{periodShort(periods[i], st)} <b>{fmt(v)}</b></small>)}<strong>{fmt(yearAvg)}</strong></div>
+            </div>
           </div>
         )}
         {grades.length > 0 && (

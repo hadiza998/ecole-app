@@ -467,5 +467,48 @@ button:active,.btn:active,.lk-tabbar a:active{transform:scale(.97)}
 .auth-card>.auth-box{animation:rise .5s .45s cubic-bezier(.2,.8,.2,1) both}
 .auth-arch-logo{animation:drop-in .6s .35s cubic-bezier(.2,.9,.3,1.2) both}
 .auth-hero>*{animation:rise .6s .2s both}
+
+/* ===== fiche élève (directeur, professeur, parent) ===== */
+.sf-head{flex-direction:row;align-items:center;gap:16px;flex-wrap:wrap;position:relative;overflow:hidden}
+.sf-avatar{width:60px;height:70px;border-radius:30px 30px 12px 12px;background:linear-gradient(180deg,#E9E3FF,#D6CBFF);color:#3B22B8;font-weight:800;font-size:1.25rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sf-id{flex:1;min-width:150px}.sf-id h2{margin:0;font-size:1.25rem}
+.sf-score{text-align:center;padding:12px 22px;border-radius:60px 60px 16px 16px;background:linear-gradient(180deg,var(--teal-soft),transparent 140%);border:1px solid color-mix(in srgb,var(--teal-ink) 22%,transparent);min-width:112px}
+.sf-score span{display:block;font-size:2rem;font-weight:800;color:var(--teal-ink);line-height:1.1}
+.sf-score small{color:var(--teal-ink);font-weight:700}
+.sf-todo{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.sf-item{display:flex;align-items:center;gap:14px;padding:12px;border-radius:16px;background:var(--surface2);border:1px solid var(--line)}
+.sf-date{width:46px;height:54px;border-radius:23px 23px 10px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;background:var(--amber-soft);color:var(--amber-ink)}
+.sf-date.bad{background:var(--red-soft);color:var(--red)}
+.sf-date b{font-size:1.1rem;line-height:1}.sf-date small{font-size:.66rem;text-transform:uppercase;font-weight:700;letter-spacing:.04em}
+.sf-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.sf-info strong{font-size:.98rem}
+.sf-sub{display:flex;gap:6px;flex-wrap:wrap}
+.sf-when{font-size:.74rem;font-weight:800;padding:5px 11px;border-radius:99px;background:var(--brand-soft);color:var(--brand-ink);white-space:nowrap}
+.sf-when.soon{background:var(--coral-soft);color:#C2410C}
+.sf-subjects{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.sf-subj{padding:14px;border-radius:16px;background:var(--surface2);border:1px solid var(--line);display:flex;flex-direction:column;gap:9px}
+.sf-subj-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.sf-subj-top strong{display:block}.sf-subj-top small{color:var(--faint);font-weight:600}
+.sf-val{font-size:1.35rem;font-weight:800;color:var(--teal-ink)}.sf-val.low{color:var(--red)}
+.sf-track{height:8px;border-radius:99px;background:var(--track);overflow:hidden}
+.sf-track i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#14B8A6,#22D3EE);transform-origin:left;animation:grow .8s .2s cubic-bezier(.2,.8,.2,1) both}
+.sf-track i.low{background:linear-gradient(90deg,#FF7A59,#F43F5E)}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.sf-terms{display:flex;gap:8px;flex-wrap:wrap}
+.sf-terms span{font-size:.76rem;color:var(--muted);padding:3px 10px;border-radius:99px;background:var(--hover);font-weight:600}
+.sf-terms span b{color:var(--text);margin-left:3px}.sf-terms span.low b{color:var(--red)}
+.sf-general{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:16px 18px;border-radius:18px;background:var(--hero-bg);color:var(--hero-text);font-weight:700}
+.sf-general>div{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.sf-general small{font-size:.76rem;color:var(--hero-sub);font-weight:600}.sf-general small b{color:var(--hero-text)}
+.sf-general strong{font-size:1.5rem;font-weight:800}
+@media screen and (max-width:900px){
+  .sf-head{padding:14px}
+  .sf-avatar{width:50px;height:58px;border-radius:25px 25px 10px 10px;font-size:1.05rem}
+  .sf-id h2{font-size:1.05rem}
+  .sf-score{padding:8px 16px;min-width:90px;flex:1 1 100%;display:flex;align-items:baseline;justify-content:center;gap:10px;border-radius:99px}
+  .sf-score span{font-size:1.6rem}
+  .sf-item{padding:10px;gap:10px}
+  .sf-when{align-self:flex-start}
+}
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 @media print{*{animation:none!important}}

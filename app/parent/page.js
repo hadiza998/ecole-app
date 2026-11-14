@@ -31,16 +31,23 @@ export default function Parent() {
 
   return (
     <div className="lk-page">
-      <div className="topbar"><h1>Bonjour {profile.full_name}</h1></div>
-      {kids.length > 1 && (
-        <div className="tabs">
-          {kids.map((k) => (
-            <button key={k.id} className={current === k.id ? 'on' : ''} onClick={() => setCurrent(k.id)}>
-              {k.first_name} <small>{k.classes?.name}</small>
-            </button>
-          ))}
+      <div className="hero">
+        <div className="topbar">
+          <div>
+            <h1>Bonjour {(profile.full_name || '').split(' ')[0]}</h1>
+            <div className="sub">{kids.length > 1 ? 'Choisis un enfant pour voir sa fiche' : 'Suivi de la scolarité de ton enfant'}</div>
+          </div>
         </div>
-      )}
+        {kids.length > 1 && (
+          <div className="tabs">
+            {kids.map((k) => (
+              <button key={k.id} className={current === k.id ? 'on' : ''} onClick={() => setCurrent(k.id)}>
+                {k.first_name} <small>{k.classes?.name}</small>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
       {current ? <StudentFile key={current} studentId={current} role="parent" /> : <div className="empty">Aucun enfant lié à ton compte.</div>}
       <form className="lk-card lk-inline" onSubmit={link}>
         <label className="lk-label">Ajouter un autre enfant</label>
