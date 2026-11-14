@@ -90,11 +90,10 @@ export default function Login() {
       </div>
       <div className="auth-form">
         {/* en-tête affiché seulement sur téléphone */}
-        <div className="auth-mobile">
-          <div className="lk-brand"><Logo size={38} id="lgm" /><Wordmark height={24} /></div>
-          <p>La gestion de ton école, simple et moderne.</p>
-        </div>
+        <div className="auth-mobile"><Wordmark height={24} /></div>
         <div className="auth-sheet">
+        <div className="auth-card">
+        <div className="auth-arch-logo"><Logo size={66} id="lgm" /></div>
         {needCode ? <MfaCode onDone={() => router.replace('/')} onCancel={async () => { await supabase.auth.signOut(); setNeedCode(false); }} /> :
         <form className="auth-box" onSubmit={submit}>
           <h1>{mode === 'in' ? 'Bon retour' : mode === 'forgot' ? 'Mot de passe oublié' : 'Créer un compte'}</h1>
@@ -113,7 +112,7 @@ export default function Login() {
           <input type="email" inputMode="email" placeholder="Email" value={f.email} onChange={set('email')} required autoComplete="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} />
           {mode !== 'forgot' && (
             <div className="pw">
-              <input type={show ? 'text' : 'password'} placeholder={mode === 'up' ? 'Mot de passe (10 caractères min.)' : 'Mot de passe'} value={f.password} onChange={set('password')} required autoComplete={mode === 'up' ? 'new-password' : 'current-password'} autoCapitalize="none" />
+              <input type={show ? 'text' : 'password'} placeholder="Mot de passe" value={f.password} onChange={set('password')} required autoComplete={mode === 'up' ? 'new-password' : 'current-password'} autoCapitalize="none" />
               <button type="button" className="pw-eye" onClick={() => setShow(!show)} aria-label={show ? 'Cacher le mot de passe' : 'Voir le mot de passe'}><Icon name={show ? 'eyeoff' : 'eye'} /></button>
             </div>
           )}
@@ -122,11 +121,16 @@ export default function Login() {
           {info && <div className="notice ok">{info}</div>}
           <button disabled={busy}>{busy ? 'Un instant…' : mode === 'in' ? 'Se connecter' : mode === 'forgot' ? 'Envoyer le lien' : 'Créer mon compte'}</button>
           {mode === 'in' && <button type="button" className="btn-link" onClick={() => { setMode('forgot'); setErr(''); setInfo(''); }}>Mot de passe oublié ?</button>}
-          {mode === 'in' && <div className="auth-sep"><span>Nouveau sur Lakol ?</span></div>}
-          <button type="button" className="btn-ghost" onClick={() => { setMode(mode === 'in' ? 'up' : 'in'); setErr(''); setInfo(''); }}>
-            {mode === 'in' ? 'Créer un compte' : mode === 'forgot' ? 'Retour à la connexion' : "J'ai déjà un compte"}
-          </button>
         </form>}
+        </div>
+        {!needCode && (
+          <div className="auth-switch">
+            {mode === 'in' ? 'Nouveau sur Lakol ?' : mode === 'forgot' ? 'Tu t\'en souviens ?' : 'Tu as déjà un compte ?'}{' '}
+            <button type="button" className="btn-link" onClick={() => { setMode(mode === 'in' ? 'up' : 'in'); setErr(''); setInfo(''); }}>
+              {mode === 'in' ? 'Créer un compte' : 'Se connecter'}
+            </button>
+          </div>
+        )}
         </div>
       </div>
     </div>
