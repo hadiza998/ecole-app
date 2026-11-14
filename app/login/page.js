@@ -4,8 +4,9 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 import Logo from '../components/Logo';
 import MfaCode from '../components/MfaCode';
+import Icon from '../components/Icon';
 
-const ROLES = [['admin', '🏫', 'Directeur'], ['teacher', '👩‍🏫', 'Professeur'], ['parent', '👨‍👩‍👧', 'Parent']];
+const ROLES = [['admin', 'school', 'Directeur'], ['teacher', 'book', 'Professeur'], ['parent', 'users', 'Parent']];
 
 export default function Login() {
   const router = useRouter();
@@ -16,6 +17,7 @@ export default function Login() {
   const [busy, setBusy] = useState(false);
   const [info, setInfo] = useState('');
   const [needCode, setNeedCode] = useState(false);
+  const [show, setShow] = useState(false);
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
 
   // Déjà connecté (ou retour du lien de confirmation par email) : on continue, ou on demande le code à 6 chiffres
@@ -71,7 +73,7 @@ export default function Login() {
       else setErr(m);
       return;
     }
-    if (!res.data.session) { setInfo('Compte créé ✓ Nous t\'avons envoyé un email : clique sur le lien pour confirmer ton adresse, puis connecte-toi ici.'); setMode('in'); return; }
+    if (!res.data.session) { setInfo('Compte créé. Nous t\'avons envoyé un email : clique sur le lien pour confirmer ton adresse, puis connecte-toi ici.'); setMode('in'); return; }
     afterLogin();
   }
 
@@ -82,36 +84,50 @@ export default function Login() {
         <div className="lk-stack">
           <h1>La gestion de ton école, simple et moderne.</h1>
           <p>Notes, bulletins, scolarité, emplois du temps : tout au même endroit, pour le directeur, les professeurs et les parents.</p>
-          <div className="auth-feats"><span>✓ Notes et bulletins en quelques clics</span><span>✓ Suivi de la scolarité en FCFA</span><span>✓ Devoirs, présence et comportement</span></div>
+          <div className="auth-feats"><span><Icon name="check" size={15} /> Notes et bulletins en quelques clics</span><span><Icon name="check" size={15} /> Suivi de la scolarité en FCFA</span><span><Icon name="check" size={15} /> Devoirs, présence et comportement</span></div>
         </div>
         <span />
       </div>
       <div className="auth-form">
+        {/* en-tête affiché seulement sur téléphone */}
+        <div className="auth-mobile">
+          <div className="lk-brand"><Logo size={40} id="lgm" />Lakol</div>
+          <p>La gestion de ton école, simple et moderne.</p>
+        </div>
+        <div className="auth-sheet">
         {needCode ? <MfaCode onDone={() => router.replace('/')} onCancel={async () => { await supabase.auth.signOut(); setNeedCode(false); }} /> :
         <form className="auth-box" onSubmit={submit}>
-          <h1>{mode === 'in' ? 'Bon retour 👋' : mode === 'forgot' ? 'Mot de passe oublié' : 'Créer un compte'}</h1>
+          <h1>{mode === 'in' ? 'Bon retour' : mode === 'forgot' ? 'Mot de passe oublié' : 'Créer un compte'}</h1>
           <p className="meta" style={{ margin: 0 }}>{mode === 'in' ? 'Connecte-toi pour continuer.' : mode === 'forgot' ? 'Écris ton email : nous t\'envoyons un lien pour en choisir un nouveau.' : 'Choisis ton profil.'}</p>
           {mode === 'up' && (
             <>
               <div className="roles">
-                {ROLES.map(([k, ic, l]) => <button type="button" key={k} className={role === k ? 'on' : ''} onClick={() => setRole(k)}><span>{ic}</span>{l}</button>)}
+                {ROLES.map(([k, ic, l]) => <button type="button" key={k} className={role === k ? 'on' : ''} onClick={() => setRole(k)}><Icon name={ic} size={24} />{l}</button>)}
               </div>
-              <input placeholder="Ton nom complet" value={f.full_name} onChange={set('full_name')} required />
-              {role === 'admin' && <><input placeholder="Nom de l'école" value={f.school_name} onChange={set('school_name')} required /><input placeholder="Ville" value={f.city} onChange={set('city')} /></>}
-              {role === 'teacher' && <input placeholder="Code de l'école (donné par le directeur)" value={f.school_code} onChange={set('school_code')} required />}
-              {role === 'parent' && <input placeholder="Code de l'élève (donné par l'école)" value={f.student_code} onChange={set('student_code')} required />}
+              <input placeholder="Ton nom complet" value={f.full_name} onChange={set('full_name')} required autoComplete="name" />
+              {role === 'admin' && <><input placeholder="Nom de l'école" value={f.school_name} onChange={set('school_name')} required /><input placeholder="Ville" value={f.city} onChange={set('city')} autoComplete="address-level2" /></>}
+              {role === 'teacher' && <input placeholder="Code de l'école (donné par le directeur)" value={f.school_code} onChange={set('school_code')} required autoCapitalize="characters" autoCorrect="off" />}
+              {role === 'parent' && <input placeholder="Code de l'élève (donné par l'école)" value={f.student_code} onChange={set('student_code')} required autoCapitalize="characters" autoCorrect="off" />}
             </>
           )}
-          <input type="email" placeholder="Email" value={f.email} onChange={set('email')} required />
-          {mode !== 'forgot' && <input type="password" placeholder={mode === 'up' ? 'Mot de passe (10 caractères min., lettres et chiffres)' : 'Mot de passe'} value={f.password} onChange={set('password')} required autoComplete={mode === 'up' ? 'new-password' : 'current-password'} />}
+          <input type="email" inputMode="email" placeholder="Email" value={f.email} onChange={set('email')} required autoComplete="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} />
+          {mode !== 'forgot' && (
+            <div className="pw">
+              <input type={show ? 'text' : 'password'} placeholder={mode === 'up' ? 'Mot de passe (10 caractères min.)' : 'Mot de passe'} value={f.password} onChange={set('password')} required autoComplete={mode === 'up' ? 'new-password' : 'current-password'} autoCapitalize="none" />
+              <button type="button" className="pw-eye" onClick={() => setShow(!show)} aria-label={show ? 'Cacher le mot de passe' : 'Voir le mot de passe'}><Icon name={show ? 'eyeoff' : 'eye'} /></button>
+            </div>
+          )}
+          {mode === 'up' && <span className="meta" style={{ marginTop: -6 }}>Au moins 10 caractères, avec des lettres et des chiffres.</span>}
           {err && <div className="notice">{err}</div>}
-          {info && <div className="notice" style={{ background: '#E8FBF3', color: '#0B6B4B' }}>{info}</div>}
-          <button disabled={busy}>{busy ? '…' : mode === 'in' ? 'Se connecter' : mode === 'forgot' ? 'Envoyer le lien' : 'Créer mon compte'}</button>
-          {mode === 'in' && <button type="button" className="btn-ghost" onClick={() => { setMode('forgot'); setErr(''); setInfo(''); }}>Mot de passe oublié ?</button>}
+          {info && <div className="notice ok">{info}</div>}
+          <button disabled={busy}>{busy ? 'Un instant…' : mode === 'in' ? 'Se connecter' : mode === 'forgot' ? 'Envoyer le lien' : 'Créer mon compte'}</button>
+          {mode === 'in' && <button type="button" className="btn-link" onClick={() => { setMode('forgot'); setErr(''); setInfo(''); }}>Mot de passe oublié ?</button>}
+          {mode === 'in' && <div className="auth-sep"><span>Nouveau sur Lakol ?</span></div>}
           <button type="button" className="btn-ghost" onClick={() => { setMode(mode === 'in' ? 'up' : 'in'); setErr(''); setInfo(''); }}>
-            {mode === 'in' ? 'Pas encore de compte ? Créer un compte' : mode === 'forgot' ? 'Retour à la connexion' : "J'ai déjà un compte"}
+            {mode === 'in' ? 'Créer un compte' : mode === 'forgot' ? 'Retour à la connexion' : "J'ai déjà un compte"}
           </button>
         </form>}
+        </div>
       </div>
     </div>
   );

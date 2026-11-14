@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Icon from './Icon';
 
 // "Combien d'élèves ?" -> des cases vides apparaissent pour écrire les noms.
 export default function StudentGrid({ rows, setRows }) {
@@ -34,7 +35,7 @@ export default function StudentGrid({ rows, setRows }) {
                 <span className="lk-num">{i + 1}</span>
                 <input placeholder="Nom" value={r.last} onChange={(e) => update(i, 'last', e.target.value)} />
                 <input placeholder="Prénom" value={r.first} onChange={(e) => update(i, 'first', e.target.value)} />
-                <button type="button" className="btn-small btn-danger" title="Retirer" onClick={() => remove(i)}>✕</button>
+                <button type="button" className="btn-small btn-danger" title="Retirer" aria-label="Retirer" onClick={() => remove(i)}><Icon name="x" size={14} /></button>
               </div>
             ))}
           </div>

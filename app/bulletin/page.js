@@ -6,6 +6,7 @@ import { useSettings } from '../../lib/useSettings';
 import { mean, subjectAvg, generalAvg, appreciation, wDOf, fmt } from '../../lib/grades';
 import { periodList, periodTitle, yearLabel, yearUpper, ordinal, BULLETIN } from '../../lib/settings';
 import { exportPdf, exportDocx, safeName } from '../../lib/bulletinExport';
+import Icon from '../components/Icon';
 
 export default function Bulletin() {
   const { profile, status } = useProfile(['admin']);
@@ -81,9 +82,9 @@ export default function Bulletin() {
       <div className="topbar no-print">
         <div><h1>Bulletins</h1><div className="sub">Télécharge en PDF, en Word (modifiable) ou imprime. Choisis un élève ou toute la classe.</div></div>
         <div className="lk-inline" style={{ flexWrap: 'wrap' }}>
-          <button disabled={!!busy || shown.length === 0} onClick={() => download('pdf')}>{busy === 'pdf' ? 'Création…' : '⬇ PDF'}</button>
-          <button className="btn-ghost" disabled={!!busy || shown.length === 0} onClick={() => download('docx')}>{busy === 'docx' ? 'Création…' : '📝 Word (modifiable)'}</button>
-          <button className="btn-ghost" onClick={() => window.print()}>🖨 Imprimer</button>
+          <button disabled={!!busy || shown.length === 0} onClick={() => download('pdf')}>{busy === 'pdf' ? 'Création…' : <><Icon name="download" /> PDF</>}</button>
+          <button className="btn-ghost" disabled={!!busy || shown.length === 0} onClick={() => download('docx')}>{busy === 'docx' ? 'Création…' : <><Icon name="file" /> Word (modifiable)</>}</button>
+          <button className="btn-ghost" onClick={() => window.print()}><Icon name="print" /> Imprimer</button>
         </div>
       </div>
       {err && <div className="notice no-print">{err}</div>}

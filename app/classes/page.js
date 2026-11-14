@@ -6,6 +6,7 @@ import { useProfile, Blocked } from '../../lib/useProfile';
 import StudentGrid, { filledRows } from '../components/StudentGrid';
 import { useSettings } from '../../lib/useSettings';
 import { periodWord } from '../../lib/settings';
+import Icon from '../components/Icon';
 
 const DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
 const norm = (s) => s.trim().replace(/\s+/g, ' ');
@@ -49,8 +50,8 @@ function SubjectPicker({ subjects, value, onToggle, onPlan, me, reload, setErr, 
         <div className="meta">Tes matières :{' '}
           {subjects.filter((s) => s.created_by === me.id).map((s) => (
             <span key={s.id} className="tag" style={{ marginRight: 6 }}>{s.name}{' '}
-              <a style={{ cursor: 'pointer' }} onClick={() => rename(s)} title="Modifier">✎</a>{' '}
-              <a style={{ cursor: 'pointer', color: 'var(--red)' }} onClick={() => del(s)} title="Supprimer">✕</a></span>
+              <a style={{ cursor: 'pointer' }} onClick={() => rename(s)} title="Modifier"><Icon name="edit" size={14} /></a>{' '}
+              <a style={{ cursor: 'pointer', color: 'var(--red)' }} onClick={() => del(s)} title="Supprimer"><Icon name="x" size={14} /></a></span>
           ))}
         </div>
       )}
@@ -171,7 +172,7 @@ export default function Classes() {
             <>
               <Link className="btn-small" href={`/eleves?classe=${c.id}`}>Élèves</Link>
               <Link className="btn-small" href="/planning">Planning</Link>
-              <button className="btn-small btn-ghost" onClick={() => setManage(manage === c.id ? null : c.id)}>{manage === c.id ? 'Fermer' : '✎ Gérer'}</button>
+              <button className="btn-small btn-ghost" onClick={() => setManage(manage === c.id ? null : c.id)}>{manage === c.id ? 'Fermer' : <><Icon name="edit" size={14} /> Gérer</>}</button>
             </>
           )}
         </div>
@@ -216,7 +217,7 @@ export default function Classes() {
               <select value={s.subject_id} onChange={(e) => setSlots(slots.map((x, j) => j === i ? { ...x, subject_id: e.target.value } : x))}>
                 <option value="">Matière</option>{subjects.filter((x) => plan[x.id]).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
               </select>
-              <button type="button" className="btn-small btn-danger" onClick={() => setSlots(slots.filter((_, j) => j !== i))}>✕</button>
+              <button type="button" className="btn-small btn-danger" onClick={() => setSlots(slots.filter((_, j) => j !== i))} aria-label="Retirer"><Icon name="x" size={14} /></button>
             </div>
           ))}
           <div><button type="button" className="btn-ghost btn-small" onClick={() => setSlots([...slots, { day: '1', start: '08:00', end: '09:00', subject_id: Object.keys(plan)[0] || '' }])}>+ Ajouter un créneau</button></div>

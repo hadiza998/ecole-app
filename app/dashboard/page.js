@@ -6,6 +6,7 @@ import { useProfile, Blocked } from '../../lib/useProfile';
 import { fcfa, fmt, METHODS } from '../../lib/grades';
 import { useSettings } from '../../lib/useSettings';
 import { periodList, periodShort } from '../../lib/settings';
+import Icon from '../components/Icon';
 
 export default function Dashboard() {
   const { profile, status } = useProfile(['admin']);
@@ -35,7 +36,7 @@ export default function Dashboard() {
     <div className="lk-page">
       <div className="hero">
       <div className="topbar">
-        <div><h1>Bonjour {profile.full_name.split(' ')[0]} 👋</h1><div className="sub">{new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })} · vue d'ensemble de l'école</div></div>
+        <div><h1>Bonjour {profile.full_name.split(' ')[0]}</h1><div className="sub">{new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })} · vue d'ensemble de l'école</div></div>
         <div className="tabs" style={{ background: 'rgba(255,255,255,.2)' }}>
           {[[null, 'Année'], ...periodList(st).map((t) => [t, periodShort(t, st)])].map(([v, l]) => (
             <button key={l} className={term === v ? 'on' : ''} onClick={() => setTerm(v)}>{l}</button>
@@ -47,10 +48,10 @@ export default function Dashboard() {
       {!d ? <p className="meta">Chargement…</p> : (
         <>
           <div className="stats">
-            <div className="stat"><i>🎓</i><small>Élèves</small><strong>{d.students}</strong></div>
-            <div className="stat c2"><i>📚</i><small>Classes</small><strong>{d.classes}</strong></div>
-            <div className="stat c3"><i>👩‍🏫</i><small>Professeurs</small><strong>{d.teachers}</strong></div>
-            <div className="stat c4"><i>💰</i><small>Scolarité encaissée</small><strong className="lk-ok">{fcfa(d.total_paid)}</strong><small>sur {fcfa(d.total_due)}</small></div>
+            <div className="stat"><i><Icon name="cap" /></i><small>Élèves</small><strong>{d.students}</strong></div>
+            <div className="stat c2"><i><Icon name="book" /></i><small>Classes</small><strong>{d.classes}</strong></div>
+            <div className="stat c3"><i><Icon name="users" /></i><small>Professeurs</small><strong>{d.teachers}</strong></div>
+            <div className="stat c4"><i><Icon name="cash" /></i><small>Scolarité encaissée</small><strong className="lk-ok">{fcfa(d.total_paid)}</strong><small>sur {fcfa(d.total_due)}</small></div>
           </div>
           <div className="grid2">
             <div className="lk-card lk-inline" style={{ flexWrap: 'nowrap', flexDirection: 'row' }}>
@@ -88,7 +89,7 @@ export default function Dashboard() {
           <div className="grid2">
             <div className="lk-card">
               <h3>Impayés les plus élevés</h3>
-              {d.top_unpaid.length === 0 ? <div className="empty">Tout est à jour 🎉</div> : d.top_unpaid.map((s) => (
+              {d.top_unpaid.length === 0 ? <div className="empty">Tout est à jour</div> : d.top_unpaid.map((s) => (
                 <Link className="row" href={`/eleves/${s.id}`} key={s.id}>
                   <div className="person">{s.first_name} {s.last_name} <span className="tag">{s.class_name}</span></div>
                   <strong className="lk-warn">{fcfa(s.remaining)}</strong>
@@ -110,8 +111,8 @@ export default function Dashboard() {
       )}
 
       <div className="grid2">
-        <a className="lk-card lift" href="/annonces"><h3>📢 Annonces</h3><span className="meta">Publie une information pour tous : pas de cours, réunion, rentrée… Les parents sont prévenus par email.</span><b>Écrire une annonce →</b></a>
-        <a className="lk-card lift" href="/messages"><h3>💬 Messages</h3><span className="meta">Écris à un parent, à un professeur, ou envoie un message groupé à toute une classe.</span><b>Ouvrir la messagerie →</b></a>
+        <a className="lk-card lift" href="/annonces"><h3><Icon name="megaphone" /> Annonces</h3><span className="meta">Publie une information pour tous : pas de cours, réunion, rentrée… Les parents sont prévenus par email.</span><b>Écrire une annonce →</b></a>
+        <a className="lk-card lift" href="/messages"><h3><Icon name="chat" /> Messages</h3><span className="meta">Écris à un parent, à un professeur, ou envoie un message groupé à toute une classe.</span><b>Ouvrir la messagerie →</b></a>
       </div>
 
       <div className="lk-card lk-inline">
@@ -120,7 +121,7 @@ export default function Dashboard() {
           <span className="meta">Donne ce code à chaque professeur : il le saisit à son inscription.</span>
         </div>
         <code className="lk-code">{code || '…'}</code>
-        <button className="btn-ghost" onClick={() => { navigator.clipboard?.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 1500); }}>{copied ? 'Copié ✓' : 'Copier'}</button>
+        <button className="btn-ghost" onClick={() => { navigator.clipboard?.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 1500); }}>{copied ? 'Copié' : 'Copier'}</button>
       </div>
     </div>
   );

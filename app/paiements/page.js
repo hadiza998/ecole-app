@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useProfile, Blocked } from '../../lib/useProfile';
 import { fcfa, METHODS } from '../../lib/grades';
+import Icon from '../components/Icon';
 
 export default function Paiements() {
   const { profile, status } = useProfile(['admin']);
@@ -143,7 +144,7 @@ export default function Paiements() {
                     {hist.map((p) => (
                       <div className="row" key={p.id}>
                         <div className="person">{new Date(p.paid_at).toLocaleDateString('fr-FR')} <span className="tag">{METHODS[p.method] || p.method}</span></div>
-                        <span>{fcfa(p.amount)} <button className="btn-small btn-danger" onClick={() => delPayment(p.id)}>✕</button></span>
+                        <span>{fcfa(p.amount)} <button className="btn-small btn-danger" onClick={() => delPayment(p.id)} aria-label="Supprimer"><Icon name="x" size={14} /></button></span>
                       </div>
                     ))}
                   </>
@@ -157,19 +158,19 @@ export default function Paiements() {
       {tab === 'frais' && (
         <>
           <div className="lk-card">
-            <h3>🏫 Frais pour toute l'école</h3>
+            <h3><Icon name="school" /> Frais pour toute l'école</h3>
             <span className="meta">S'appliquent automatiquement à chaque élève, même dans les classes créées plus tard.</span>
             {fees.filter((f) => f.class_id === null).length === 0 && <span className="meta">Aucun frais général pour le moment.</span>}
             {fees.filter((f) => f.class_id === null).map((f) => (
               <div className="row" key={f.id}>
                 <div className="person">{f.label}</div>
-                <span>{fcfa(f.amount)} <button className="btn-small btn-ghost" onClick={() => editFee(f)}>Modifier</button> <button className="btn-small btn-danger" onClick={() => delFee(f)}>✕</button></span>
+                <span>{fcfa(f.amount)} <button className="btn-small btn-ghost" onClick={() => editFee(f)}>Modifier</button> <button className="btn-small btn-danger" onClick={() => delFee(f)} aria-label="Supprimer"><Icon name="x" size={14} /></button></span>
               </div>
             ))}
           </div>
 
           <div className="lk-card">
-            <h3>🎯 Frais spécifiques à une classe</h3>
+            <h3><Icon name="target" /> Frais spécifiques à une classe</h3>
             {classes.filter((c) => fees.some((f) => f.class_id === c.id)).length === 0 && <span className="meta">Aucun frais spécifique pour le moment.</span>}
             {classes.filter((c) => fees.some((f) => f.class_id === c.id)).map((c) => (
               <div key={c.id}>
@@ -177,7 +178,7 @@ export default function Paiements() {
                 {fees.filter((f) => f.class_id === c.id).map((f) => (
                   <div className="row" key={f.id}>
                     <div className="person">{f.label}</div>
-                    <span>{fcfa(f.amount)} <button className="btn-small btn-ghost" onClick={() => editFee(f)}>Modifier</button> <button className="btn-small btn-danger" onClick={() => delFee(f)}>✕</button></span>
+                    <span>{fcfa(f.amount)} <button className="btn-small btn-ghost" onClick={() => editFee(f)}>Modifier</button> <button className="btn-small btn-danger" onClick={() => delFee(f)} aria-label="Supprimer"><Icon name="x" size={14} /></button></span>
                   </div>
                 ))}
               </div>
@@ -191,7 +192,7 @@ export default function Paiements() {
               <input type="number" min="1" placeholder="Montant FCFA" value={fee.amount} onChange={(e) => setFee({ ...fee, amount: e.target.value })} style={{ maxWidth: 170 }} />
             </div>
             <div className="chips">
-              <button type="button" className={fee.all ? 'on' : ''} onClick={() => setFee({ ...fee, all: true })}>🏫 Toute l'école</button>
+              <button type="button" className={fee.all ? 'on' : ''} onClick={() => setFee({ ...fee, all: true })}><Icon name="school" /> Toute l'école</button>
               {classes.map((c) => (
                 <button type="button" key={c.id} className={!fee.all && fee.targets.includes(c.id) ? 'on' : ''}
                   onClick={() => setFee({ ...fee, all: false, targets: fee.targets.includes(c.id) ? fee.targets.filter((x) => x !== c.id) : [...fee.targets, c.id] })}>{c.name}</button>

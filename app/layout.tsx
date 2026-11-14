@@ -1,8 +1,11 @@
 import { Suspense } from 'react';
+import type { Viewport } from 'next';
 import './globals.css';
 import NavMenu from './NavMenu';
 
 export const metadata = { title: "Lakol — gestion d'école", description: "Gestion d'école privée" };
+
+export const viewport: Viewport = { width: 'device-width', initialScale: 1, viewportFit: 'cover', themeColor: '#3B2BA8' };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

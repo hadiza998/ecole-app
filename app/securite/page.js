@@ -1,18 +1,16 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 import { useProfile, Blocked } from '../../lib/useProfile';
+import Icon from '../components/Icon';
 
 export default function Securite() {
-  const router = useRouter();
   const { profile, status } = useProfile(['admin', 'teacher', 'parent']);
   const [factors, setFactors] = useState([]);
   const [enroll, setEnroll] = useState(null);
   const [code, setCode] = useState('');
   const [msg, setMsg] = useState(null);
   const [busy, setBusy] = useState(false);
-  const [required, setRequired] = useState(false);
   const isAdmin = profile?.role === 'admin';
 
   async function load() {
@@ -20,7 +18,6 @@ export default function Securite() {
     setFactors(data?.totp || []);
   }
   useEffect(() => { if (status === 'ok') load(); }, [status]);
-  useEffect(() => { setRequired(new URLSearchParams(window.location.search).get('requis') === '1'); }, []);
 
   async function start() {
     setMsg(null); setBusy(true);
@@ -38,18 +35,15 @@ export default function Securite() {
     const { error } = await supabase.auth.mfa.challengeAndVerify({ factorId: enroll.id, code: code.trim() });
     setBusy(false);
     if (error) return setMsg({ ok: false, t: 'Code incorrect. Vérifie l\'heure de ton téléphone et réessaie avec le code actuel.' });
-    try { sessionStorage.setItem('lk_mfa_' + profile.id, '1'); } catch {}
     setEnroll(null); setCode('');
     await load();
-    setMsg({ ok: true, t: 'Double authentification activée ✓' });
-    if (required) setTimeout(() => router.replace('/'), 1200);
+    setMsg({ ok: true, t: 'Double authentification activée.' });
   }
 
   async function remove(f) {
     if (!window.confirm('Retirer cet appareil ? Tu ne pourras plus l\'utiliser pour te connecter.')) return;
     const { error } = await supabase.auth.mfa.unenroll({ factorId: f.id });
     if (error) return setMsg({ ok: false, t: error.message });
-    if (factors.length <= 1) { try { sessionStorage.removeItem('lk_mfa_' + profile.id); } catch {} }
     await load(); setMsg({ ok: true, t: 'Appareil retiré.' });
   }
 
@@ -66,8 +60,8 @@ export default function Securite() {
     <div className="lk-page">
       <div className="topbar"><div><h1>Sécurité du compte</h1><div className="sub">Protège ton compte avec un code à 6 chiffres en plus du mot de passe.</div></div></div>
 
-      {required && !active && (
-        <div className="notice">🔐 Pour protéger les données des élèves, le directeur doit activer la double authentification avant d'utiliser Lakol. Ça prend 2 minutes.</div>
+      {isAdmin && !active && (
+        <div className="notice"><Icon name="shield" /> Conseil : en tant que directeur, tu gères les données de tous les élèves. Activer la double authentification est fortement recommandé, mais ce n'est pas obligatoire. Ça prend 2 minutes.</div>
       )}
 
       <div className="lk-card">
@@ -93,15 +87,15 @@ export default function Securite() {
 
         {active && !enroll && (
           <>
-            <p className="meta">À chaque connexion, Lakol te demandera le code de ton application.{isAdmin && ' Cette protection est obligatoire pour le directeur.'}</p>
+            <p className="meta">À chaque connexion, Lakol te demandera le code de ton application.</p>
             {factors.map((f) => (
               <div className="row" key={f.id}>
-                <div className="person">📱 {f.friendly_name || 'Appareil'} <span className="meta">ajouté le {new Date(f.created_at).toLocaleDateString('fr-FR')}</span></div>
-                {(!isAdmin || factors.length > 1) && <button className="btn-ghost" onClick={() => remove(f)}>Retirer</button>}
+                <div className="person"><Icon name="phone" /> {f.friendly_name || 'Appareil'} <span className="meta">ajouté le {new Date(f.created_at).toLocaleDateString('fr-FR')}</span></div>
+                <button className="btn-ghost" onClick={() => remove(f)}>Retirer</button>
               </div>
             ))}
-            {isAdmin && factors.length === 1 && <p className="meta">Conseil : ajoute un 2e appareil (ou garde la clé de secours dans un endroit sûr) pour ne pas être bloqué si tu perds ton téléphone.</p>}
-            <div className="lk-inline"><button className="btn-ghost" onClick={start} disabled={busy}>+ Ajouter un autre appareil</button></div>
+            {factors.length === 1 && <p className="meta">Conseil : ajoute un 2e appareil pour ne pas être bloqué si tu perds ton téléphone.</p>}
+            <div className="lk-inline"><button className="btn-ghost" onClick={start} disabled={busy}><Icon name="plus" /> Ajouter un autre appareil</button></div>
           </>
         )}
         {msg && <div className={msg.ok ? 'lk-ok' : 'lk-low'} style={{ marginTop: 10 }}>{msg.t}</div>}

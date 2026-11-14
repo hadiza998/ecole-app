@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useProfile, Blocked } from '../../lib/useProfile';
 import { fcfa, METHODS } from '../../lib/grades';
+import Icon from '../components/Icon';
 
 const thisMonth = () => new Date().toISOString().slice(0, 7);
 
@@ -130,7 +131,7 @@ export default function Professeurs() {
             {myPaid.map((p) => (
               <div className="row" key={p.id}>
                 <div className="person">{new Date(p.paid_at).toLocaleDateString('fr-FR')} <span className="tag">{METHODS[p.method] || p.method}</span> {p.note && <span className="meta">{p.note}</span>}</div>
-                <span>{fcfa(p.amount)} <button className="btn-small btn-danger" onClick={() => delPay(p.id)}>✕</button></span>
+                <span>{fcfa(p.amount)} <button className="btn-small btn-danger" onClick={() => delPay(p.id)} aria-label="Supprimer"><Icon name="x" size={14} /></button></span>
               </div>
             ))}
           </div>

@@ -85,7 +85,7 @@ export default function Notes() {
     if (dup.length) return setMsg(`« ${name} » existe déjà pour ${dup.map((d) => d.first_name).join(', ')}. Clique sur sa note pour la modifier, ou change le nom.`);
     const { error } = await supabase.from('grades').insert(rows);
     if (error) return setMsg(error.message);
-    setMsg(`${rows.length} note(s) « ${name} » enregistrée(s) ✓ Les parents sont prévenus.`); pingNotify(); setTitleTouched(false); load();
+    setMsg(`${rows.length} note(s) « ${name} » enregistrée(s). Les parents sont prévenus.`); pingNotify(); setTitleTouched(false); load();
   }
   async function editGrade(g) {
     const v = prompt(`Note « ${labelOf(g)} » sur ${st.scale} (laisse vide pour supprimer)`, g.score);

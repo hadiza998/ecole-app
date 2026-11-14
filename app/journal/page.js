@@ -2,10 +2,11 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useProfile, Blocked } from '../../lib/useProfile';
+import Icon from '../components/Icon';
 
 const ENT = {
-  '': ['Tout', '📋'], note: ['Notes', '📝'], paiement: ['Paiements', '💰'], frais: ['Frais', '🏷️'], eleve: ['Élèves', '🎓'],
-  classe: ['Classes', '🏫'], compte: ['Comptes', '👤'], salaire: ['Salaires', '💵'], parametres: ['Paramètres', '⚙️'],
+  '': ['Tout', 'list'], note: ['Notes', 'edit'], paiement: ['Paiements', 'card'], frais: ['Frais', 'tag'], eleve: ['Élèves', 'cap'],
+  classe: ['Classes', 'school'], compte: ['Comptes', 'user'], salaire: ['Salaires', 'cash'], parametres: ['Paramètres', 'gear'],
 };
 const ACT = { create: ['Ajout', 'ok'], update: ['Modif.', 'mid'], delete: ['Suppression', 'bad'] };
 const ROLE = { admin: 'Directeur', teacher: 'Professeur', parent: 'Parent' };
@@ -40,7 +41,7 @@ export default function Journal() {
       <div className="topbar"><div><h1>Journal des modifications</h1><div className="sub">Qui a changé quoi, et quand. Personne ne peut modifier ou effacer ce journal, pas même le directeur.</div></div></div>
       <div className="lk-card">
         <div className="lk-inline" style={{ flexWrap: 'wrap' }}>
-          <div className="tabs" style={{ flexWrap: 'wrap' }}>{Object.entries(ENT).map(([k, [l, ic]]) => <button key={k} className={entity === k ? 'on' : ''} onClick={() => setEntity(k)}>{ic} {l}</button>)}</div>
+          <div className="tabs" style={{ flexWrap: 'wrap' }}>{Object.entries(ENT).map(([k, [l, ic]]) => <button key={k} className={entity === k ? 'on' : ''} onClick={() => setEntity(k)}><Icon name={ic} /> {l}</button>)}</div>
         </div>
         <div className="lk-inline"><input placeholder="Chercher (nom d'élève, de professeur, montant…)" value={q} onChange={(e) => setQ(e.target.value)} /></div>
       </div>
@@ -52,7 +53,7 @@ export default function Journal() {
           return (
             <div className="row" key={r.id} style={{ alignItems: 'flex-start' }}>
               <div className="person" style={{ alignItems: 'flex-start' }}>
-                <span style={{ fontSize: '1.3rem' }}>{(ENT[r.entity] || ['', '📋'])[1]}</span>
+                <span className="jr-ic"><Icon name={(ENT[r.entity] || ['', 'list'])[1]} /></span>
                 <div>
                   <div><span className={'badge ' + ac}>{al}</span> {r.summary}</div>
                   <div className="meta">{r.actor_name}{r.actor_role ? ` · ${ROLE[r.actor_role] || r.actor_role}` : ''}</div>

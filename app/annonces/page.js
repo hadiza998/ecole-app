@@ -3,8 +3,9 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useProfile, Blocked } from '../../lib/useProfile';
 import { pingNotify, refreshBadges } from '../../lib/notify';
+import Icon from '../components/Icon';
 
-const KINDS = { info: ['📢 Information', ''], urgent: ['🔴 Urgent', 'coral'], closure: ['🏫 Pas de cours', 'amber'] };
+const KINDS = { info: ['Information', ''], urgent: ['Urgent', 'coral'], closure: ['Pas de cours', 'amber'] };
 const AUD = { all: 'Tout le monde', parents: 'Parents', teachers: 'Professeurs' };
 
 export default function Annonces() {
@@ -27,7 +28,7 @@ export default function Annonces() {
     if (!f.title.trim() || !f.body.trim()) return setMsg('Écris un titre et un message.');
     const { error } = await supabase.from('announcements').insert({ school_id: profile.school_id, title: f.title.trim(), body: f.body.trim(), audience: f.audience, kind: f.kind, pinned: f.pinned });
     if (error) return setMsg(error.message);
-    setF({ title: '', body: '', audience: 'all', kind: 'info', pinned: false }); setMsg('Annonce publiée ✓ Les emails partent.');
+    setF({ title: '', body: '', audience: 'all', kind: 'info', pinned: false }); setMsg('Annonce publiée. Les emails partent.');
     pingNotify(); load();
   }
   const togglePin = async (a) => { await supabase.from('announcements').update({ pinned: !a.pinned }).eq('id', a.id); load(); };
@@ -51,7 +52,7 @@ export default function Annonces() {
           <div className="lk-inline">
             <span className="lk-label">Pour :</span>
             <div className="chips">{Object.entries(AUD).map(([k, l]) => <button type="button" key={k} className={f.audience === k ? 'on' : ''} onClick={() => setF({ ...f, audience: k })}>{l}</button>)}</div>
-            <label className="meta"><input type="checkbox" checked={f.pinned} onChange={(e) => setF({ ...f, pinned: e.target.checked })} /> 📌 Épingler en haut</label>
+            <label className="meta"><input type="checkbox" checked={f.pinned} onChange={(e) => setF({ ...f, pinned: e.target.checked })} /> <Icon name="pin" /> Épingler en haut</label>
           </div>
           <div className="lk-inline"><button>Publier et prévenir</button>{msg && <span className="meta">{msg}</span>}</div>
         </form>
@@ -63,7 +64,7 @@ export default function Annonces() {
           <div className="lk-inline" style={{ justifyContent: 'space-between' }}>
             <div className="actions">
               <span className={'badge ' + (a.kind === 'urgent' ? 'bad' : a.kind === 'closure' ? 'mid' : '')}>{KINDS[a.kind][0]}</span>
-              {a.pinned && <span className="badge">📌 Épinglée</span>}
+              {a.pinned && <span className="badge"><Icon name="pin" /> Épinglée</span>}
               {isAdmin && <span className="tag">{AUD[a.audience]}</span>}
             </div>
             <span className="meta">{new Date(a.created_at).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</span>

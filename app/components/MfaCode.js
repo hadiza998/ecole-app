@@ -25,7 +25,7 @@ export default function MfaCode({ onDone, onCancel }) {
 
   return (
     <form className="auth-box" onSubmit={submit}>
-      <h1>Vérification en 2 étapes 🔐</h1>
+      <h1>Vérification en 2 étapes</h1>
       <p className="meta" style={{ margin: 0 }}>Ouvre ton application d'authentification et écris le code à 6 chiffres de Lakol.</p>
       <input inputMode="numeric" autoComplete="one-time-code" autoFocus maxLength={6} placeholder="000000" value={code}
         onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} style={{ textAlign: 'center', fontSize: '1.5rem', letterSpacing: '.4em' }} />

@@ -23,7 +23,7 @@ export default function Parent() {
     e.preventDefault();
     setMsg('');
     const { error } = await supabase.rpc('link_child', { p_code: code.trim().toUpperCase() });
-    if (error) setMsg(error.message); else { setCode(''); setMsg('Enfant ajouté ✓'); load(); }
+    if (error) setMsg(error.message); else { setCode(''); setMsg('Enfant ajouté'); load(); }
   }
 
   if (status === 'blocked') return <Blocked />;

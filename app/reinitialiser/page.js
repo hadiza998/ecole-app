@@ -52,7 +52,7 @@ export default function Reinitialiser() {
               <input type="password" placeholder="Répète le mot de passe" value={pw2} onChange={(e) => setPw2(e.target.value)} autoComplete="new-password" required />
               <button disabled={busy}>{busy ? '…' : 'Enregistrer'}</button>
             </>)}
-            {ok && <div className="notice" style={{ background: '#E8FBF3', color: '#0B6B4B' }}>Mot de passe changé ✓ Redirection…</div>}
+            {ok && <div className="notice" style={{ background: '#E8FBF3', color: '#0B6B4B' }}>Mot de passe changé. Redirection…</div>}
             {err && <div className="notice">{err}</div>}
             <button type="button" className="btn-ghost" onClick={() => router.replace('/login')}>Retour à la connexion</button>
           </form>

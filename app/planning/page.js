@@ -5,6 +5,7 @@ import { useProfile, Blocked } from '../../lib/useProfile';
 import { pingNotify } from '../../lib/notify';
 import { useSettings } from '../../lib/useSettings';
 import { termOfDate, periodWord } from '../../lib/settings';
+import Icon from '../components/Icon';
 
 const DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
 const KINDS = { devoir: ['Devoir', 'mid'], examen: ['Examen', 'bad'], composition: ['Composition', ''] };
@@ -130,7 +131,7 @@ export default function Planning() {
         </div>
         <h3>{x.title}</h3>
         <div className="meta">{x.subjects?.name && <b>{x.subjects.name} · </b>}{new Date(x.due_date + 'T00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
-        {x.chapters && <div className="tag" style={{ width: 'fit-content' }}>📖 Chapitres : {x.chapters}</div>}
+        {x.chapters && <div className="tag" style={{ width: 'fit-content' }}><Icon name="book" size={14} /> Chapitres : {x.chapters}</div>}
         {canEdit && <div><button className="btn-small btn-danger" onClick={() => del('assignments', x.id)}>Supprimer</button></div>}
       </div>
     );
@@ -141,8 +142,8 @@ export default function Planning() {
       <div className="topbar">
         <div><h1>Planning</h1><div className="sub">Emploi du temps, devoirs et examens de la classe.</div></div>
         <div className="tabs">
-          <button className={tab === 'edt' ? 'on' : ''} onClick={() => setTab('edt')}>📅 Emploi du temps</button>
-          <button className={tab === 'dev' ? 'on' : ''} onClick={() => setTab('dev')}>📝 Devoirs &amp; examens {upcoming.length > 0 && <small style={{ color: 'inherit' }}>({upcoming.length})</small>}</button>
+          <button className={tab === 'edt' ? 'on' : ''} onClick={() => setTab('edt')}><Icon name="calendar" /> Emploi du temps</button>
+          <button className={tab === 'dev' ? 'on' : ''} onClick={() => setTab('dev')}><Icon name="edit" /> Devoirs &amp; examens {upcoming.length > 0 && <small style={{ color: 'inherit' }}>({upcoming.length})</small>}</button>
         </div>
       </div>
       {err && <div className="notice">{err}</div>}
@@ -157,7 +158,7 @@ export default function Planning() {
       {classId && tab === 'edt' && (
         <>
           <div className="lk-card today">
-            <h3>☀️ Aujourd'hui · {DAYS[todayIdx - 1] || 'Dimanche'}</h3>
+            <h3><Icon name="sun" /> Aujourd'hui · {DAYS[todayIdx - 1] || 'Dimanche'}</h3>
             {todaySlots.length === 0 ? <span className="meta">Pas de cours aujourd'hui pour cette classe.</span> : (
               <div className="lk-inline" style={{ gap: 10 }}>
                 {todaySlots.map((s) => {
@@ -211,7 +212,7 @@ export default function Planning() {
                     <div className="tt-block" key={s.id} style={{ top: ((mins(s.start_time) - lo * 60) / 60) * HOUR_H, height: ((mins(s.end_time) - mins(s.start_time)) / 60) * HOUR_H - 3, background: colorOf(s.subjects?.name, names) }}>
                       <b>{s.subjects?.name || 'Cours'}</b>
                       <span>{hm(s.start_time)}–{hm(s.end_time)}{s.room ? ` · ${s.room}` : ''}</span>
-                      {canEdit && <button title="Supprimer" onClick={(e) => { e.stopPropagation(); del('timetable', s.id); }}>✕</button>}
+                      {canEdit && <button title="Supprimer" onClick={(e) => { e.stopPropagation(); del('timetable', s.id); }} aria-label="Supprimer"><Icon name="x" size={12} /></button>}
                     </div>
                   ))}
                 </div>
@@ -257,7 +258,7 @@ export default function Planning() {
 
           {plans.length > 0 && (
             <div className="lk-card">
-              <h3>🎯 Programme du {periodWord(st)} {curTerm}</h3>
+              <h3><Icon name="target" /> Programme du {periodWord(st)} {curTerm}</h3>
               {plans.map((p, i) => {
                 const d = countOf(p.subject_id, ['devoir']); const c = countOf(p.subject_id, ['composition', 'examen']);
                 return (
@@ -273,7 +274,7 @@ export default function Planning() {
             </div>
           )}
 
-          {groups.length === 0 && <div className="empty">Rien de prévu pour le moment 🎉</div>}
+          {groups.length === 0 && <div className="empty">Rien de prévu pour le moment</div>}
           {groups.map(([title, list]) => (
             <div className="lk-stack" key={title}>
               <h3>{title}</h3>

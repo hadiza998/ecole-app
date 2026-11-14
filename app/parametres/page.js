@@ -57,7 +57,7 @@ export default function Parametres() {
       pass_mark: Number(String(f.pass_mark).replace(',', '.')), show_rank: !!f.show_rank, language: f.language, bulletin_header: f.bulletin_header || '',
     } });
     setBusy(false);
-    setMsg(error ? { ok: false, t: error.message } : { ok: true, t: 'Paramètres enregistrés ✓ Ils s\'appliquent partout (notes, bulletins, tableau de bord).' });
+    setMsg(error ? { ok: false, t: error.message } : { ok: true, t: 'Paramètres enregistrés. Ils s\'appliquent partout (notes, bulletins, tableau de bord).' });
   }
 
   async function saveCoef(s, value) {
@@ -71,7 +71,7 @@ export default function Parametres() {
       const { error } = await supabase.from('class_coefficients').upsert({ class_id: cid, subject_id: s.id, coefficient: n });
       if (error) return setCm(error.message);
     }
-    setCm('Enregistré ✓'); loadSubs();
+    setCm('Enregistré'); loadSubs();
   }
 
   // Exemple en direct : devoirs à 60 % du barème, composition à 75 %

@@ -4,7 +4,8 @@ import { supabase } from '../../lib/supabase';
 import { useProfile, Blocked } from '../../lib/useProfile';
 
 const today = () => new Date().toISOString().slice(0, 10);
-import { KINDS } from '../../lib/kinds';
+import { KINDS, KindIcon } from '../../lib/kinds';
+import Icon from '../components/Icon';
 
 export default function VieScolaire() {
   const { profile, status } = useProfile(['teacher']);
@@ -47,7 +48,7 @@ export default function VieScolaire() {
     const rows = students.filter((s) => att[s.id]).map((s) => ({ school_id: profile.school_id, class_id: classId, student_id: s.id, date, status: att[s.id], created_by: profile.id }));
     if (!rows.length) return setErr("Marque au moins un élève.");
     const { error } = await supabase.from('attendance').upsert(rows, { onConflict: 'student_id,class_id,date,created_by' });
-    if (error) setErr(error.message); else setSaved(`Présence du ${new Date(date).toLocaleDateString('fr-FR')} enregistrée ✓`);
+    if (error) setErr(error.message); else setSaved(`Présence du ${new Date(date).toLocaleDateString('fr-FR')} enregistrée.`);
   }
   async function addNote(e) {
     e.preventDefault(); setErr('');
@@ -107,8 +108,8 @@ export default function VieScolaire() {
                   {students.map((s) => <option key={s.id} value={s.id}>{s.last_name} {s.first_name}</option>)}
                 </select>
                 <div className="chips">
-                  {Object.entries(KINDS).map(([k, [l, ic]]) => (
-                    <button type="button" key={k} className={(k === 'positif' ? 'teal ' : 'coral ') + (f.kind === k ? 'on' : '')} onClick={() => setF({ ...f, kind: k })}>{ic} {l}</button>
+                  {Object.entries(KINDS).map(([k, [l]]) => (
+                    <button type="button" key={k} className={(k === 'positif' ? 'teal ' : 'coral ') + (f.kind === k ? 'on' : '')} onClick={() => setF({ ...f, kind: k })}><KindIcon k={k} /> {l}</button>
                   ))}
                 </div>
                 <textarea rows={2} placeholder="Précision (facultatif)" value={f.comment} onChange={(e) => setF({ ...f, comment: e.target.value })} />
@@ -120,8 +121,8 @@ export default function VieScolaire() {
                 {notes.length === 0 && <span className="meta">Aucune remarque pour le moment.</span>}
                 {notes.map((n) => (
                   <div className="row" key={n.id}>
-                    <div className="person">{KINDS[n.kind]?.[1]} <b>{n.students?.last_name} {n.students?.first_name}</b> <span className={'badge ' + (n.kind === 'positif' ? 'ok' : 'bad')}>{KINDS[n.kind]?.[0]}</span> {n.comment && <span className="meta">{n.comment}</span>}</div>
-                    <span className="meta">{new Date(n.date).toLocaleDateString('fr-FR')} {!n.visible_to_parent && '🔒'} <button className="btn-small btn-danger" onClick={() => delNote(n.id)}>✕</button></span>
+                    <div className="person"><KindIcon k={n.kind} /> <b>{n.students?.last_name} {n.students?.first_name}</b> <span className={'badge ' + (n.kind === 'positif' ? 'ok' : 'bad')}>{KINDS[n.kind]?.[0]}</span> {n.comment && <span className="meta">{n.comment}</span>}</div>
+                    <span className="meta">{new Date(n.date).toLocaleDateString('fr-FR')} {!n.visible_to_parent && <Icon name="lock" size={14} />} <button className="btn-small btn-danger" onClick={() => delNote(n.id)} aria-label="Supprimer"><Icon name="x" size={14} /></button></span>
                   </div>
                 ))}
               </div>

@@ -1,10 +1,11 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { KINDS } from '../../lib/kinds';
+import { KINDS, KindIcon } from '../../lib/kinds';
 import { subjectAvg, generalAvg, appreciation, wDOf, fmt, fcfa, METHODS } from '../../lib/grades';
 import { useSettings } from '../../lib/useSettings';
 import { periodList, periodShort } from '../../lib/settings';
+import Icon from './Icon';
 
 // Fiche élève. role = 'admin' | 'teacher' | 'parent'.
 // La scolarité (frais, paiements) n'est affichée qu'au directeur et aux parents.
@@ -93,7 +94,7 @@ export default function StudentFile({ studentId, role }) {
 
       {todo.length > 0 && (
         <div className="lk-card">
-          <h3>📅 À venir pour la classe</h3>
+          <h3><Icon name="calendar" /> À venir pour la classe</h3>
           {todo.map((x) => {
             const n = Math.round((new Date(x.due_date) - new Date(new Date().toISOString().slice(0, 10))) / 864e5);
             return (
@@ -156,10 +157,10 @@ export default function StudentFile({ studentId, role }) {
           <span className="badge mid">{att.filter((a) => a.status === 'late').length} retard(s)</span>
           <span className="badge">{behav.length} remarque(s)</span>
         </div>
-        {behav.length === 0 && att.length === 0 && <span className="meta">Rien à signaler pour le moment 🎉</span>}
+        {behav.length === 0 && att.length === 0 && <span className="meta">Rien à signaler pour le moment</span>}
         {behav.map((b) => (
           <div className="row" key={b.id}>
-            <div className="person">{KINDS[b.kind]?.[1]} <span className={'badge ' + (b.kind === 'positif' ? 'ok' : 'bad')}>{KINDS[b.kind]?.[0]}</span> {b.comment && <span className="meta">{b.comment}</span>}</div>
+            <div className="person"><KindIcon k={b.kind} /> <span className={'badge ' + (b.kind === 'positif' ? 'ok' : 'bad')}>{KINDS[b.kind]?.[0]}</span> {b.comment && <span className="meta">{b.comment}</span>}</div>
             <span className="meta">{new Date(b.date).toLocaleDateString('fr-FR')}</span>
           </div>
         ))}
@@ -178,7 +179,7 @@ export default function StudentFile({ studentId, role }) {
               <div className="stats">
                 <div className="stat"><small>À payer au total</small><strong>{fcfa(due)}</strong></div>
                 <div className="stat"><small>Déjà payé</small><strong className="lk-ok">{fcfa(paid)}</strong></div>
-                <div className="stat"><small>Reste à payer</small><strong className={left ? 'lk-warn' : 'lk-ok'}>{left ? fcfa(left) : 'Soldé ✓'}</strong></div>
+                <div className="stat"><small>Reste à payer</small><strong className={left ? 'lk-warn' : 'lk-ok'}>{left ? fcfa(left) : 'Soldé'}</strong></div>
               </div>
               <div className="bar"><div style={{ width: pct + '%' }} /></div>
               <div className="meta">{pct}% réglé</div>

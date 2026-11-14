@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useProfile, Blocked } from '../../lib/useProfile';
 import { pingNotify, refreshBadges } from '../../lib/notify';
+import Icon from '../components/Icon';
 
 const ROLE = { admin: 'Direction', teacher: 'Professeur', parent: 'Parent' };
 const initials = (n) => (n || '?').split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase();
@@ -74,7 +75,7 @@ export default function Messages() {
     e.preventDefault(); setErr(''); setInfo('');
     const { data, error } = await supabase.rpc('send_bulk', { p_target: bulk.target, p_class_id: bulk.target === 'class' ? bulk.class_id : null, p_body: bulk.body });
     if (error) return setErr(error.message);
-    setInfo(`Message envoyé à ${data} personne(s) ✓`); setBulk({ ...bulk, body: '' }); pingNotify(); loadConvs();
+    setInfo(`Message envoyé à ${data} personne(s).`); setBulk({ ...bulk, body: '' }); pingNotify(); loadConvs();
   }
 
   if (status === 'blocked') return <Blocked />;
@@ -88,8 +89,8 @@ export default function Messages() {
       <div className="topbar">
         <div><h1>Messages</h1><div className="sub">{isParent ? 'Écris aux professeurs et à la direction.' : 'Écris aux parents (un par un ou en groupe).'}</div></div>
         <div className="actions">
-          <button onClick={() => { setPanel(panel === 'new' ? null : 'new'); setOther(null); }}>✉️ Nouveau message</button>
-          {!isParent && <button className="btn-ghost" onClick={() => { setPanel(panel === 'bulk' ? null : 'bulk'); setOther(null); setInfo(''); }}>📣 Message groupé</button>}
+          <button onClick={() => { setPanel(panel === 'new' ? null : 'new'); setOther(null); }}><Icon name="mail" /> Écrire</button>
+          {!isParent && <button className="btn-ghost" onClick={() => { setPanel(panel === 'bulk' ? null : 'bulk'); setOther(null); setInfo(''); }}><Icon name="megaphone" /> Message groupé</button>}
         </div>
       </div>
       {err && <div className="notice">{err}</div>}
@@ -128,7 +129,7 @@ export default function Messages() {
 
           {panel === 'bulk' && (
             <form className="lk-stack" onSubmit={sendBulk}>
-              <h3>📣 Message groupé</h3>
+              <h3><Icon name="megaphone" /> Message groupé</h3>
               <div className="chips">
                 {profile.role === 'admin' && <button type="button" className={bulk.target === 'parents' ? 'on' : ''} onClick={() => setBulk({ ...bulk, target: 'parents' })}>Tous les parents</button>}
                 {profile.role === 'admin' && <button type="button" className={bulk.target === 'teachers' ? 'on' : ''} onClick={() => setBulk({ ...bulk, target: 'teachers' })}>Tous les professeurs</button>}
@@ -148,7 +149,7 @@ export default function Messages() {
           {!panel && other && (
             <>
               <div className="lk-inline">
-                <button className="btn-small btn-ghost back" onClick={() => setOther(null)}>←</button>
+                <button className="btn-small btn-ghost back" onClick={() => setOther(null)} aria-label="Retour"><Icon name="back" size={16} /></button>
                 <span className="avatar">{initials(other.name)}</span>
                 <div><b>{other.name}</b> <span className="tag">{ROLE[other.role]}</span></div>
               </div>
