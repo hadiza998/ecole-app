@@ -1,208 +1,128 @@
-"use client";
-import { useEffect, useState } from "react";
-import { supabase } from "../../lib/supabase";
-
-function mean(arr) {
-  return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
-}
-
-// Moyenne d'une matière = (moyenne des devoirs + composition) / 2
-function subjectAvg(list) {
-  const d = mean(list.filter((g) => g.kind === "devoir").map((g) => Number(g.score)));
-  const c = mean(list.filter((g) => g.kind === "composition").map((g) => Number(g.score)));
-  if (d !== null && c !== null) return (d + c) / 2;
-  return d !== null ? d : c;
-}
-
-// Moyenne générale pondérée par les coefficients
-function generalAvg(gradesOfStudent) {
-  const bySubject = {};
-  gradesOfStudent.forEach((g) => {
-    (bySubject[g.subject_id] = bySubject[g.subject_id] || []).push(g);
-  });
-  let total = 0, coefs = 0;
-  Object.values(bySubject).forEach((list) => {
-    const avg = subjectAvg(list);
-    const coef = Number(list[0].subjects.coefficient);
-    if (avg !== null) {
-      total += avg * coef;
-      coefs += coef;
-    }
-  });
-  return coefs ? total / coefs : null;
-}
-
-function appreciation(avg) {
-  if (avg === null) return "";
-  if (avg >= 16) return "Excellent";
-  if (avg >= 14) return "Très bien";
-  if (avg >= 12) return "Bien";
-  if (avg >= 10) return "Passable";
-  return "Insuffisant";
-}
+'use client';
+import { useEffect, useState } from 'react';
+import { supabase } from '../../lib/supabase';
+import { useProfile, Blocked } from '../../lib/useProfile';
+import { useSettings } from '../../lib/useSettings';
+import { mean, subjectAvg, generalAvg, appreciation, wDOf, fmt } from '../../lib/grades';
+import { periodList, periodTitle, yearLabel, yearUpper, ordinal, BULLETIN } from '../../lib/settings';
+import { exportPdf, exportDocx, safeName } from '../../lib/bulletinExport';
 
 export default function Bulletin() {
-  const [session, setSession] = useState(null);
-  const [students, setStudents] = useState([]);
-  const [studentId, setStudentId] = useState("");
-  const [term, setTerm] = useState("1");
+  const { profile, status } = useProfile(['admin']);
+  const st = useSettings(status === 'ok');
   const [school, setSchool] = useState(null);
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState("");
+  const [classes, setClasses] = useState([]);
+  const [classId, setClassId] = useState('');
+  const [term, setTerm] = useState(1);
+  const [studentId, setStudentId] = useState('all');
+  const [students, setStudents] = useState([]);
+  const [grades, setGrades] = useState([]);
+  const [coefs, setCoefs] = useState({});
+  const [busy, setBusy] = useState('');
+  const [err, setErr] = useState('');
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
-  }, []);
-
+    if (status !== 'ok') return;
+    supabase.from('schools').select('name, city').maybeSingle().then(({ data }) => setSchool(data));
+    supabase.from('classes').select('id, name, school_year').order('name').then(({ data }) => { setClasses(data || []); if (data?.length) setClassId(data[0].id); });
+  }, [status]);
   useEffect(() => {
-    if (!session) return;
-    supabase
-      .from("students")
-      .select("id, first_name, last_name, matricule, class_id, classes(name, school_year)")
-      .order("last_name")
-      .then(({ data }) => setStudents(data || []));
-    supabase.from("schools").select("name, city").limit(1).single()
-      .then(({ data }) => setSchool(data));
-  }, [session]);
+    if (!classId) return;
+    (async () => {
+      const { data: s } = await supabase.from('students').select('id, first_name, last_name').eq('class_id', classId).order('last_name');
+      setStudents(s || []); setStudentId('all');
+      const ids = (s || []).map((x) => x.id);
+      const { data: g } = ids.length ? await supabase.from('grades').select('student_id, subject_id, term, kind, score, subjects(name, coefficient)').in('student_id', ids) : { data: [] };
+      setGrades(g || []);
+      const { data: cc } = await supabase.from('class_coefficients').select('subject_id, coefficient').eq('class_id', classId);
+      setCoefs(Object.fromEntries((cc || []).map((x) => [x.subject_id, Number(x.coefficient)])));
+    })();
+  }, [classId]);
+  useEffect(() => { if (term > st.periods) setTerm(1); }, [st.periods]);
 
-  async function generate() {
-    setError("");
-    setResult(null);
-    const student = students.find((s) => s.id === studentId);
-    if (!student) return;
+  if (status === 'blocked') return <Blocked />;
+  if (status !== 'ok') return <div className="lk-page"><p className="meta">Chargement…</p></div>;
 
-    // Tous les élèves de la même classe (pour le rang)
-    const classmates = students.filter((s) => s.class_id === student.class_id);
-    const ids = classmates.map((s) => s.id);
-
-    const { data: grades, error } = await supabase
-      .from("grades")
-      .select("student_id, subject_id, kind, score, subjects(name, coefficient)")
-      .eq("term", Number(term))
-      .in("student_id", ids);
-    if (error) return setError(error.message);
-
-    // Lignes du bulletin pour l'élève choisi
-    const mine = grades.filter((g) => g.student_id === studentId);
-    const bySubject = {};
-    mine.forEach((g) => {
-      (bySubject[g.subject_id] = bySubject[g.subject_id] || []).push(g);
-    });
-    const rows = Object.values(bySubject).map((list) => {
-      const devoirs = list.filter((g) => g.kind === "devoir").map((g) => Number(g.score));
-      const compo = list.filter((g) => g.kind === "composition").map((g) => Number(g.score));
-      const avg = subjectAvg(list);
-      const coef = Number(list[0].subjects.coefficient);
-      return {
-        name: list[0].subjects.name,
-        coef,
-        devoirs: mean(devoirs),
-        compo: mean(compo),
-        avg,
-        points: avg !== null ? avg * coef : null,
-      };
-    });
-
-    // Rang dans la classe
-    const averages = classmates
-      .map((s) => ({
-        id: s.id,
-        avg: generalAvg(grades.filter((g) => g.student_id === s.id)),
-      }))
-      .filter((x) => x.avg !== null)
-      .sort((a, b) => b.avg - a.avg);
-    const myAvg = generalAvg(mine);
-    const rank = averages.findIndex((x) => x.id === studentId) + 1;
-
-    setResult({ student, rows, myAvg, rank: rank || null, total: averages.length });
+  const lang = st.language, B = BULLETIN[lang] || BULLETIN.fr, wD = wDOf(st);
+  const termKey = term === 0 ? null : term;
+  function compute(sid) {
+    const mine = grades.filter((g) => g.student_id === sid && (termKey == null || g.term === termKey));
+    const bySub = {};
+    mine.forEach((g) => { (bySub[g.subject_id] ||= { name: g.subjects?.name, coef: coefs[g.subject_id] ?? Number(g.subjects?.coefficient || 1), list: [] }).list.push(g); });
+    const lines = Object.values(bySub).sort((a, b) => a.name.localeCompare(b.name)).map((s) => ({
+      name: s.name, coef: s.coef,
+      dev: mean(s.list.filter((g) => g.kind === 'devoir').map((g) => Number(g.score))),
+      comp: mean(s.list.filter((g) => g.kind === 'composition').map((g) => Number(g.score))),
+      avg: subjectAvg(s.list, wD),
+    }));
+    return { lines, gen: generalAvg(lines.map((l) => ({ avg: l.avg, coef: l.coef }))) };
   }
+  const data = students.map((s) => ({ s, ...compute(s.id) }));
+  const ranked = [...data].filter((d) => d.gen != null).sort((a, b) => b.gen - a.gen);
+  const rankOf = (id) => { const i = ranked.findIndex((d) => d.s.id === id); return i < 0 ? '–' : `${ordinal(i + 1, lang)} / ${ranked.length}`; };
+  const cls = classes.find((c) => c.id === classId);
+  const shown = studentId === 'all' ? data : data.filter((d) => d.s.id === studentId);
+  const periodText = term === 0 ? yearLabel(lang) : periodTitle(term, st, lang);
+  const periodCode = term === 0 ? (lang === 'en' ? 'Year' : 'Annee') : safeName(periodText);
 
-  const fmt = (n) => (n === null || n === undefined ? "-" : n.toFixed(2));
-
-  if (!session) {
-    return (
-      <main style={{ maxWidth: 700, margin: "40px auto", padding: 16 }}>
-        <p>Connecte-toi d'abord sur la <a href="/">page d'accueil</a>.</p>
-      </main>
-    );
+  async function download(kind) {
+    setErr(''); setBusy(kind);
+    try {
+      const items = shown.map(({ s, lines, gen }) => ({ name: `${s.last_name} ${s.first_name}`, className: cls?.name || '', year: cls?.school_year || '', lines, gen, rank: rankOf(s.id) }));
+      const meta = { school: school?.name, city: school?.city, st, periodTitle: (term === 0 ? yearUpper(lang) : periodText.toUpperCase()) };
+      const base = shown.length === 1 ? `Bulletin_${safeName(shown[0].s.last_name)}_${safeName(shown[0].s.first_name)}_${periodCode}` : `Bulletins_${safeName(cls?.name || 'classe')}_${periodCode}`;
+      if (kind === 'pdf') await exportPdf(items, meta, `${base}.pdf`); else await exportDocx(items, meta, `${base}.docx`);
+    } catch (e) { setErr('Le téléchargement a échoué : ' + (e.message || e)); }
+    setBusy('');
   }
 
   return (
-    <main style={{ maxWidth: 700, margin: "40px auto", padding: 16 }}>
-      <style>{`
-        @media print {
-          .no-print { display: none !important; }
-          main { margin: 0 !important; max-width: 100% !important; }
-        }
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #333; padding: 6px; text-align: left; }
-      `}</style>
-
-      <div className="no-print">
-        <a href="/">← Retour</a>
-        <h1>Bulletin</h1>
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        <div style={{ display: "grid", gap: 8, maxWidth: 360 }}>
-          <select value={studentId} onChange={(e) => setStudentId(e.target.value)}>
-            <option value="">Élève</option>
-            {students.map((s) => (
-              <option key={s.id} value={s.id}>{s.last_name} {s.first_name}</option>
-            ))}
-          </select>
-          <select value={term} onChange={(e) => setTerm(e.target.value)}>
-            <option value="1">Trimestre 1</option>
-            <option value="2">Trimestre 2</option>
-            <option value="3">Trimestre 3</option>
-          </select>
-          <button onClick={generate}>Générer le bulletin</button>
+    <div className="lk-page">
+      <div className="topbar no-print">
+        <div><h1>Bulletins</h1><div className="sub">Télécharge en PDF, en Word (modifiable) ou imprime. Choisis un élève ou toute la classe.</div></div>
+        <div className="lk-inline" style={{ flexWrap: 'wrap' }}>
+          <button disabled={!!busy || shown.length === 0} onClick={() => download('pdf')}>{busy === 'pdf' ? 'Création…' : '⬇ PDF'}</button>
+          <button className="btn-ghost" disabled={!!busy || shown.length === 0} onClick={() => download('docx')}>{busy === 'docx' ? 'Création…' : '📝 Word (modifiable)'}</button>
+          <button className="btn-ghost" onClick={() => window.print()}>🖨 Imprimer</button>
         </div>
       </div>
-
-      {result && (
-        <section style={{ marginTop: 32 }}>
-          <h2 style={{ textAlign: "center" }}>{school?.name}</h2>
-          <p style={{ textAlign: "center" }}>
-            {school?.city} : Bulletin du trimestre {term}
-          </p>
-          <p>
-            <strong>Élève :</strong> {result.student.last_name} {result.student.first_name}
-            {" "}({result.student.matricule || "sans matricule"})<br />
-            <strong>Classe :</strong> {result.student.classes?.name}
-            {" "}({result.student.classes?.school_year})
-          </p>
-
+      {err && <div className="notice no-print">{err}</div>}
+      <div className="lk-card no-print lk-inline">
+        <select value={classId} onChange={(e) => setClassId(e.target.value)}>{classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
+        <select value={studentId} onChange={(e) => setStudentId(e.target.value)}>
+          <option value="all">Toute la classe ({students.length})</option>
+          {students.map((s) => <option key={s.id} value={s.id}>{s.last_name} {s.first_name}</option>)}
+        </select>
+        <select value={term} onChange={(e) => setTerm(Number(e.target.value))}>
+          {periodList(st).map((t) => <option key={t} value={t}>{periodTitle(t, st)}</option>)}<option value={0}>{yearLabel('fr')}</option>
+        </select>
+      </div>
+      {shown.length === 0 && <div className="empty">Aucun élève dans cette classe.</div>}
+      {shown.map(({ s, lines, gen }) => (
+        <div className="bul" key={s.id}>
+          <div className="head">
+            <div style={{ whiteSpace: 'pre-line' }}>{st.bulletin_header}</div>
+            <div><b>{school?.name}</b><br /><small>{school?.city}</small></div>
+          </div>
+          <h2>{B.title} — {term === 0 ? yearUpper(lang) : periodText.toUpperCase()}</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '.95rem' }}>
+            <span>{B.student} : <b>{s.last_name} {s.first_name}</b></span><span>{B.cls} : <b>{cls?.name}</b> · {cls?.school_year}</span>
+          </div>
           <table>
-            <thead>
-              <tr>
-                <th>Matière</th><th>Coef</th><th>Devoirs</th>
-                <th>Composition</th><th>Moyenne</th><th>Points</th>
-              </tr>
-            </thead>
+            <thead><tr><th>{B.subject}</th><th>{B.coef}</th><th>{B.dev}</th><th>{B.comp}</th><th>{B.avg}</th><th>{B.points}</th><th>{B.remark}</th></tr></thead>
             <tbody>
-              {result.rows.map((r) => (
-                <tr key={r.name}>
-                  <td>{r.name}</td>
-                  <td>{r.coef}</td>
-                  <td>{fmt(r.devoirs)}</td>
-                  <td>{fmt(r.compo)}</td>
-                  <td>{fmt(r.avg)}</td>
-                  <td>{fmt(r.points)}</td>
-                </tr>
+              {lines.map((l) => (
+                <tr key={l.name}><td>{l.name}</td><td>{l.coef}</td><td>{fmt(l.dev)}</td><td>{fmt(l.comp)}</td><td><b>{fmt(l.avg)}</b></td><td>{fmt(l.avg * l.coef)}</td><td>{appreciation(l.avg, st, lang)}</td></tr>
               ))}
+              {lines.length === 0 && <tr><td colSpan={7}>{B.none}</td></tr>}
             </tbody>
           </table>
-
-          <p style={{ marginTop: 16 }}>
-            <strong>Moyenne générale :</strong> {fmt(result.myAvg)} / 20<br />
-            <strong>Rang :</strong> {result.rank ? `${result.rank} / ${result.total}` : "-"}<br />
-            <strong>Appréciation :</strong> {appreciation(result.myAvg)}
-          </p>
-
-          <button className="no-print" onClick={() => window.print()}>
-            Imprimer / Enregistrer en PDF
-          </button>
-        </section>
-      )}
-    </main>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1rem' }}>
+            <span>{B.general} : <b>{fmt(gen)}/{st.scale}</b> — {appreciation(gen, st, lang)}</span>{st.show_rank && <span>{B.rank} : <b>{rankOf(s.id)}</b></span>}
+          </div>
+          <div className="sign"><span>{B.teacher}</span><span>{B.director}</span><span>{B.parents}</span></div>
+        </div>
+      ))}
+    </div>
   );
 }
