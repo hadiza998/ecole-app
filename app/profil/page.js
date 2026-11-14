@@ -37,7 +37,7 @@ export default function Profil() {
       <div className="lk-card">
         <h3><Icon name="shield" /> Sécurité</h3>
         <span className="meta">Conseillé : active la double authentification (un code à 6 chiffres en plus du mot de passe). Facultatif.</span>
-        <div className="lk-inline"><Link href="/securite" className="btn-ghost" style={{ display: 'inline-block', padding: '10px 18px', borderRadius: 99 }}>Gérer la sécurité de mon compte</Link></div>
+        <div className="lk-inline"><Link href="/securite" className="btn-ghost" style={{ display: 'inline-block', padding: '10px 18px', borderRadius: 12 }}>Gérer la sécurité de mon compte</Link></div>
       </div>
       <form className="lk-card" onSubmit={save}>
         <h3><Icon name="bell" /> Notifications</h3>

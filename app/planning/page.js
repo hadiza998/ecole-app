@@ -9,10 +9,7 @@ import Icon from '../components/Icon';
 
 const DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
 const KINDS = { devoir: ['Devoir', 'mid'], examen: ['Examen', 'bad'], composition: ['Composition', ''] };
-const PALETTE = [
-  'linear-gradient(135deg,#6D4AFF,#9B6BFF)', 'linear-gradient(135deg,#0EA5A4,#22D3EE)', 'linear-gradient(135deg,#FF6B6B,#FF9A5B)',
-  'linear-gradient(135deg,#F59E0B,#FBBF24)', 'linear-gradient(135deg,#EC4899,#F472B6)', 'linear-gradient(135deg,#3B82F6,#60A5FA)',
-];
+const PALETTE = ['#6D4AFF', '#0E9B8F', '#F2603F', '#C98400', '#D63384', '#3B82F6'];
 const HOUR_H = 56;
 const hm = (t) => (t || '').slice(0, 5);
 const mins = (t) => { const [h, m] = hm(t).split(':').map(Number); return h * 60 + m; };

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { supabase } from '../lib/supabase';
-import Logo from './components/Logo';
+import Logo, { Wordmark } from './components/Logo';
 import Icon from './components/Icon';
 
 type Item = [string, string, string];
@@ -73,7 +73,7 @@ export default function NavMenu() {
   return (
     <>
       <aside className="lk-side no-print">
-        <Link href="/" className="lk-brand"><Logo id="lgn" />Lakol</Link>
+        <Link href="/" className="lk-brand"><Logo id="lgn" size={34} /><Wordmark height={20} /></Link>
         <div className="lk-navlabel">Menu</div>
         <nav className="lk-links">
           {items.map(([href, label, icon]) => (

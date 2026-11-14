@@ -7,7 +7,7 @@ import { PRESETS, DEFAULTS, periodWord } from '../../lib/settings';
 import { appreciation, fmt } from '../../lib/grades';
 
 const Row = ({ label, hint, children }) => (
-  <div style={{ display: 'grid', gap: 4, padding: '10px 0', borderBottom: '1px solid #eee' }}>
+  <div style={{ display: 'grid', gap: 4, padding: '10px 0', borderBottom: '1px solid var(--line)' }}>
     <b>{label}</b>
     {hint && <span className="meta">{hint}</span>}
     <div className="lk-inline" style={{ flexWrap: 'wrap' }}>{children}</div>

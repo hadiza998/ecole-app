@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
-import Logo from '../components/Logo';
+import Logo, { Wordmark } from '../components/Logo';
 import MfaCode from '../components/MfaCode';
 import Icon from '../components/Icon';
 
@@ -80,7 +80,7 @@ export default function Login() {
   return (
     <div className="auth">
       <div className="auth-hero">
-        <div className="lk-brand"><Logo size={42} id="lgl" />Lakol</div>
+        <div className="lk-brand"><Logo size={42} id="lgl" /><Wordmark height={26} /></div>
         <div className="lk-stack">
           <h1>La gestion de ton école, simple et moderne.</h1>
           <p>Notes, bulletins, scolarité, emplois du temps : tout au même endroit, pour le directeur, les professeurs et les parents.</p>
@@ -91,7 +91,7 @@ export default function Login() {
       <div className="auth-form">
         {/* en-tête affiché seulement sur téléphone */}
         <div className="auth-mobile">
-          <div className="lk-brand"><Logo size={40} id="lgm" />Lakol</div>
+          <div className="lk-brand"><Logo size={38} id="lgm" /><Wordmark height={24} /></div>
           <p>La gestion de ton école, simple et moderne.</p>
         </div>
         <div className="auth-sheet">

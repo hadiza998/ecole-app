@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
-import Logo from '../components/Logo';
+import Logo, { Wordmark } from '../components/Logo';
 import MfaCode from '../components/MfaCode';
 
 // Page ouverte depuis le lien « mot de passe oublié » reçu par email
@@ -41,7 +41,7 @@ export default function Reinitialiser() {
 
   return (
     <div className="auth">
-      <div className="auth-hero"><div className="lk-brand"><Logo size={42} id="lgr" />Lakol</div><span /><span /></div>
+      <div className="auth-hero"><div className="lk-brand"><Logo size={42} id="lgr" /><Wordmark height={26} /></div><span /><span /></div>
       <div className="auth-form">
         {ready && needCode ? <MfaCode onDone={() => setNeedCode(false)} /> : (
           <form className="auth-box" onSubmit={submit}>
@@ -52,7 +52,7 @@ export default function Reinitialiser() {
               <input type="password" placeholder="Répète le mot de passe" value={pw2} onChange={(e) => setPw2(e.target.value)} autoComplete="new-password" required />
               <button disabled={busy}>{busy ? '…' : 'Enregistrer'}</button>
             </>)}
-            {ok && <div className="notice" style={{ background: '#E8FBF3', color: '#0B6B4B' }}>Mot de passe changé. Redirection…</div>}
+            {ok && <div className="notice ok">Mot de passe changé. Redirection…</div>}
             {err && <div className="notice">{err}</div>}
             <button type="button" className="btn-ghost" onClick={() => router.replace('/login')}>Retour à la connexion</button>
           </form>
