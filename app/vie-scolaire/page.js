@@ -12,7 +12,8 @@ export default function VieScolaire() {
   const [classes, setClasses] = useState([]);
   const [classId, setClassId] = useState('');
   const [students, setStudents] = useState([]);
-  const [date, setDate] = useState(today());
+  const [date, setDate] = useState('');
+  useEffect(() => { setDate((v) => v || today()); }, []);
   const [att, setAtt] = useState({});
   const [saved, setSaved] = useState('');
   const [notes, setNotes] = useState([]);
@@ -31,7 +32,7 @@ export default function VieScolaire() {
   }, [status]);
 
   async function load() {
-    if (!classId) return;
+    if (!classId || !date) return;
     const { data: s } = await supabase.from('students').select('id, first_name, last_name').eq('class_id', classId).order('last_name');
     setStudents(s || []); setF((x) => ({ ...x, student_id: s?.[0]?.id || '' }));
     const { data: a } = await supabase.from('attendance').select('student_id, status').eq('class_id', classId).eq('date', date).eq('created_by', profile.id);
