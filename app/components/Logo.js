@@ -19,7 +19,7 @@ export default function Logo({ size = 36, id = 'lg', tile = 'dark' }) {
   );
 }
 
-export function Wordmark({ height = 22, color = '#fff' }) {
+export function Wordmark({ height = 22, color = 'currentColor' }) {
   return (
     <svg height={height} viewBox="-2 0 86 30" role="img" aria-label="lakol" style={{ flexShrink: 0, overflow: 'visible' }}>
       <g fill="none" stroke={color} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">

@@ -37,7 +37,7 @@ export default function Dashboard() {
       <div className="hero">
       <div className="topbar">
         <div><h1>Bonjour {profile.full_name.split(' ')[0]}</h1><div className="sub">{new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })} · vue d'ensemble de l'école</div></div>
-        <div className="tabs" style={{ background: 'rgba(255,255,255,.2)' }}>
+        <div className="tabs">
           {[[null, 'Année'], ...periodList(st).map((t) => [t, periodShort(t, st)])].map(([v, l]) => (
             <button key={l} className={term === v ? 'on' : ''} onClick={() => setTerm(v)}>{l}</button>
           ))}
