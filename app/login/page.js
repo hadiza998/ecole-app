@@ -1,8 +1,9 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 import Logo from '../components/Logo';
+import MfaCode from '../components/MfaCode';
 
 const ROLES = [['admin', '🏫', 'Directeur'], ['teacher', '👩‍🏫', 'Professeur'], ['parent', '👨‍👩‍👧', 'Parent']];
 
@@ -13,17 +14,49 @@ export default function Login() {
   const [f, setF] = useState({ email: '', password: '', full_name: '', school_name: '', city: '', school_code: '', student_code: '' });
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
+  const [info, setInfo] = useState('');
+  const [needCode, setNeedCode] = useState(false);
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
 
+  // Déjà connecté (ou retour du lien de confirmation par email) : on continue, ou on demande le code à 6 chiffres
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) return;
+      const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (aal && aal.nextLevel === 'aal2' && aal.currentLevel !== 'aal2') setNeedCode(true); else router.replace('/');
+    })();
+  }, []);
+
+  async function afterLogin() {
+    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (aal && aal.nextLevel === 'aal2' && aal.currentLevel !== 'aal2') return setNeedCode(true);
+    router.replace('/');
+  }
+
+  async function forgot(e) {
+    e.preventDefault(); setErr(''); setInfo('');
+    if (!f.email.trim()) return setErr('Écris ton email.');
+    setBusy(true);
+    await supabase.auth.resetPasswordForEmail(f.email.trim(), { redirectTo: window.location.origin + '/reinitialiser' });
+    setBusy(false);
+    setInfo('Si un compte existe avec cet email, un message vient de partir avec un lien pour choisir un nouveau mot de passe.');
+  }
+
   async function submit(e) {
-    e.preventDefault(); setErr(''); setBusy(true);
+    e.preventDefault(); setErr(''); setInfo('');
+    if (mode === 'forgot') return forgot(e);
+    if (mode === 'up' && (f.password.length < 10 || !/[A-Za-z]/.test(f.password) || !/[0-9]/.test(f.password))) {
+      return setErr('Choisis un mot de passe d\'au moins 10 caractères, avec des lettres et des chiffres.');
+    }
+    setBusy(true);
     let res;
     if (mode === 'in') {
       res = await supabase.auth.signInWithPassword({ email: f.email.trim(), password: f.password });
     } else {
       res = await supabase.auth.signUp({
         email: f.email.trim(), password: f.password,
-        options: { data: { role, full_name: f.full_name, school_name: f.school_name, city: f.city, school_code: f.school_code, student_code: f.student_code } },
+        options: { emailRedirectTo: window.location.origin + '/login', data: { role, full_name: f.full_name, school_name: f.school_name, city: f.city, school_code: f.school_code, student_code: f.student_code } },
       });
     }
     setBusy(false);
@@ -32,12 +65,14 @@ export default function Login() {
       if (/already registered/i.test(m)) setErr('Cet email a déjà un compte. Clique sur « Se connecter ».');
       else if (/Invalid login/i.test(m)) setErr('Email ou mot de passe incorrect.');
       else if (/Database error/i.test(m)) setErr("Code invalide. Vérifie le code de l'école (professeur) ou le code de l'élève (parent).");
-      else if (/at least 6/i.test(m)) setErr('Le mot de passe doit avoir au moins 6 caractères.');
+      else if (/at least|weak|password/i.test(m)) setErr('Mot de passe refusé : choisis-en un plus long (10 caractères minimum, lettres et chiffres).');
+      else if (/not confirmed/i.test(m)) setErr('Ton email n\'est pas encore confirmé. Ouvre le message que nous t\'avons envoyé et clique sur le lien.');
+      else if (/rate limit|too many/i.test(m)) setErr('Trop d\'essais. Attends quelques minutes puis réessaie.');
       else setErr(m);
       return;
     }
-    if (!res.data.session) { setErr('Compte créé. Confirme ton email puis connecte-toi.'); setMode('in'); return; }
-    router.replace('/');
+    if (!res.data.session) { setInfo('Compte créé ✓ Nous t\'avons envoyé un email : clique sur le lien pour confirmer ton adresse, puis connecte-toi ici.'); setMode('in'); return; }
+    afterLogin();
   }
 
   return (
@@ -52,9 +87,10 @@ export default function Login() {
         <span />
       </div>
       <div className="auth-form">
+        {needCode ? <MfaCode onDone={() => router.replace('/')} onCancel={async () => { await supabase.auth.signOut(); setNeedCode(false); }} /> :
         <form className="auth-box" onSubmit={submit}>
-          <h1>{mode === 'in' ? 'Bon retour 👋' : 'Créer un compte'}</h1>
-          <p className="meta" style={{ margin: 0 }}>{mode === 'in' ? 'Connecte-toi pour continuer.' : 'Choisis ton profil.'}</p>
+          <h1>{mode === 'in' ? 'Bon retour 👋' : mode === 'forgot' ? 'Mot de passe oublié' : 'Créer un compte'}</h1>
+          <p className="meta" style={{ margin: 0 }}>{mode === 'in' ? 'Connecte-toi pour continuer.' : mode === 'forgot' ? 'Écris ton email : nous t\'envoyons un lien pour en choisir un nouveau.' : 'Choisis ton profil.'}</p>
           {mode === 'up' && (
             <>
               <div className="roles">
@@ -67,13 +103,15 @@ export default function Login() {
             </>
           )}
           <input type="email" placeholder="Email" value={f.email} onChange={set('email')} required />
-          <input type="password" placeholder="Mot de passe (6 caractères min.)" value={f.password} onChange={set('password')} required />
+          {mode !== 'forgot' && <input type="password" placeholder={mode === 'up' ? 'Mot de passe (10 caractères min., lettres et chiffres)' : 'Mot de passe'} value={f.password} onChange={set('password')} required autoComplete={mode === 'up' ? 'new-password' : 'current-password'} />}
           {err && <div className="notice">{err}</div>}
-          <button disabled={busy}>{busy ? '…' : mode === 'in' ? 'Se connecter' : 'Créer mon compte'}</button>
-          <button type="button" className="btn-ghost" onClick={() => { setMode(mode === 'in' ? 'up' : 'in'); setErr(''); }}>
-            {mode === 'in' ? 'Pas encore de compte ? Créer un compte' : "J'ai déjà un compte"}
+          {info && <div className="notice" style={{ background: '#E8FBF3', color: '#0B6B4B' }}>{info}</div>}
+          <button disabled={busy}>{busy ? '…' : mode === 'in' ? 'Se connecter' : mode === 'forgot' ? 'Envoyer le lien' : 'Créer mon compte'}</button>
+          {mode === 'in' && <button type="button" className="btn-ghost" onClick={() => { setMode('forgot'); setErr(''); setInfo(''); }}>Mot de passe oublié ?</button>}
+          <button type="button" className="btn-ghost" onClick={() => { setMode(mode === 'in' ? 'up' : 'in'); setErr(''); setInfo(''); }}>
+            {mode === 'in' ? 'Pas encore de compte ? Créer un compte' : mode === 'forgot' ? 'Retour à la connexion' : "J'ai déjà un compte"}
           </button>
-        </form>
+        </form>}
       </div>
     </div>
   );

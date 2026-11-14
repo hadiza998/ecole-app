@@ -10,7 +10,7 @@ const MENUS: Record<string, Item[]> = {
   admin: [
     ['/dashboard', 'Tableau de bord', 'grid'], ['/annonces', 'Annonces', 'megaphone'], ['/messages', 'Messages', 'mail'], ['/classes', 'Classes', 'book'], ['/eleves', 'Élèves', 'user'],
     ['/professeurs', 'Professeurs', 'users'], ['/planning', 'Planning', 'calendar'],
-    ['/bulletin', 'Bulletins', 'file'], ['/paiements', 'Scolarité', 'card'], ['/parametres', 'Paramètres', 'gear'],
+    ['/bulletin', 'Bulletins', 'file'], ['/paiements', 'Scolarité', 'card'], ['/journal', 'Journal', 'shield'], ['/parametres', 'Paramètres', 'gear'],
   ],
   teacher: [['/annonces', 'Annonces', 'megaphone'], ['/messages', 'Messages', 'mail'], ['/classes', 'Mes classes', 'book'], ['/eleves', 'Élèves', 'user'], ['/notes', 'Notes', 'edit'], ['/vie-scolaire', 'Vie scolaire', 'heart'], ['/planning', 'Planning', 'calendar']],
   parent: [['/parent', 'Mon enfant', 'user'], ['/annonces', 'Annonces', 'megaphone'], ['/messages', 'Messages', 'mail'], ['/planning', 'Planning', 'calendar']],
@@ -29,6 +29,7 @@ function Icon({ name }: { name: string }) {
     mail: <><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" /><path d="M22 6l-10 7L2 6" /></>,
     megaphone: <><path d="M3 11v2a1 1 0 0 0 1 1h3l7 4V6L7 10H4a1 1 0 0 0-1 1z" /><path d="M18 8a5 5 0 0 1 0 8" /></>,
     heart: <><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z" /></>,
+    shield: <><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="M9 12l2 2 4-4" /></>,
     gear: <><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></>,
     card: <><rect x="1" y="4" width="22" height="16" rx="2" /><path d="M1 10h22" /></>,
   };

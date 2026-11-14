@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
+import Link from 'next/link';
 import { useProfile, Blocked } from '../../lib/useProfile';
 
 const ROLE = { admin: 'Directeur', teacher: 'Professeur', parent: 'Parent' };
@@ -31,6 +32,11 @@ export default function Profil() {
       <div className="lk-card lk-hero">
         <div className="avatar">{profile.full_name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()}</div>
         <div><h2>{profile.full_name}</h2><div className="meta">{ROLE[profile.role]} · {profile.email}</div></div>
+      </div>
+      <div className="lk-card">
+        <h3>🔐 Sécurité</h3>
+        <span className="meta">Active la double authentification : un code à 6 chiffres en plus du mot de passe.</span>
+        <div className="lk-inline"><Link href="/securite" className="btn-ghost" style={{ display: 'inline-block', padding: '10px 18px', borderRadius: 99 }}>Gérer la sécurité de mon compte</Link></div>
       </div>
       <form className="lk-card" onSubmit={save}>
         <h3>🔔 Notifications</h3>

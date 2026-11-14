@@ -32,7 +32,8 @@ export default function Planning() {
   const [plans, setPlans] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [slot, setSlot] = useState({ day: '1', start: '08:00', end: '09:00', subject_id: '', room: '' });
-  const [a, setA] = useState({ kind: 'devoir', subject_id: '', title: '', due_date: ymd(), chapters: '' });
+  const [a, setA] = useState({ kind: 'devoir', subject_id: '', title: '', due_date: '', chapters: '' });
+  useEffect(() => { setA((p) => (p.due_date ? p : { ...p, due_date: ymd() })); }, []);
   const [err, setErr] = useState('');
   const formRef = useRef(null);
   const canEdit = profile?.role !== 'parent';

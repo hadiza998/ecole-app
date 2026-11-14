@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import './globals.css';
 import NavMenu from './NavMenu';
 
@@ -12,8 +13,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <div className="lk-shell">
-          <NavMenu />
-          <main className="lk-main">{children}</main>
+          <Suspense fallback={null}><NavMenu /></Suspense>
+          <main className="lk-main"><Suspense fallback={<div className="lk-page"><p className="meta">Chargement…</p></div>}>{children}</Suspense></main>
         </div>
       </body>
     </html>
