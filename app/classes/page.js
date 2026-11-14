@@ -93,7 +93,8 @@ export default function Classes() {
   const isTeacher = profile?.role === 'teacher';
 
   // formulaire de création
-  const [name, setName] = useState(''); const [yr, setYr] = useState(year());
+  const [name, setName] = useState(''); const [yr, setYr] = useState('');
+  useEffect(() => { setYr((v) => v || year()); }, []);
   const [plan, setPlan] = useState({});        // subjectId -> {d,c}
   const [slots, setSlots] = useState([]);
   const [rows, setRows] = useState([]);
